@@ -18,4 +18,16 @@ class MasterFaskesType extends Model
     {
         return $this->hasMany('App\Agency', 'agency_type');
     }
+
+    static function getType($data)
+    {
+        $masterFaskesType = MasterFaskesType::where('name', 'LIKE', "%{$data['jenis_instansi']}%")->first();
+        if (!$masterFaskesType) {
+            $masterFaskesType = MasterFaskesType::create([
+                'name' => $data['jenis_instansi'],
+                'is_imported' => true
+            ]);
+        }
+        return $masterFaskesType->id;
+    }
 }
