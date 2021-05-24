@@ -4,12 +4,13 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\Request;
 
 class RequestLetter extends Model
 {
     use SoftDeletes;
     protected $table = 'request_letters';
-    
+
     protected $fillable = [
         'outgoing_letter_id',
         'applicant_id'
@@ -41,5 +42,18 @@ class RequestLetter extends Model
         ->orderBy('request_letters.id')->get();
 
         return $requestLetter;
+    }
+
+    static function requestLetterStore(Request $request)
+    {
+        $response = [];
+        foreach (json_decode($request->input('letter_request'), true) as $key => $value) {
+            $request_letter = RequestLetter::firstOrCreate([
+                'outgoing_letter_id' => $request->input('outgoing_letter_id'),
+                'applicant_id' => $value['applicant_id']
+            ]);
+            $response[] = $request_letter;
+        }
+        return $response;
     }
 }

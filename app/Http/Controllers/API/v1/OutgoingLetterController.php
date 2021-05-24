@@ -167,7 +167,7 @@ class OutgoingLetterController extends Controller
             $request->request->add(['status' =>  OutgoingLetter::NOT_APPROVED]);
             $outgoing_letter = OutgoingLetter::create($request->all());
             $request->request->add(['outgoing_letter_id' => $outgoing_letter->id]);
-            $request_letter = $this->requestLetterStore($request);
+            $request_letter = RequestLetter::requestLetterStore($request);
             $response = [
                 'outgoing_letter' => $outgoing_letter,
                 'request_letter' => $request_letter,
@@ -177,23 +177,6 @@ class OutgoingLetterController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
-        }
-        return $response;
-    }
-
-    /**
-     * Store Request Letter
-     *
-     */
-    public function requestLetterStore($request)
-    {
-        $response = [];
-        foreach (json_decode($request->input('letter_request'), true) as $key => $value) {
-            $request_letter = RequestLetter::firstOrCreate([
-                'outgoing_letter_id' => $request->input('outgoing_letter_id'),
-                'applicant_id' => $value['applicant_id']
-            ]);
-            $response[] = $request_letter;
         }
         return $response;
     }
