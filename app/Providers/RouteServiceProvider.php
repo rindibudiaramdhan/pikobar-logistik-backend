@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -30,7 +31,15 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // return response formatted according to PIKOBAR's response format
+        // ref: https://laravel.com/docs/6.x/responses#response-macros
+        Response::macro('format', function ($status, $message, $data=null) {
+            return Response::json([
+                'status' => $status,
+                'message' => $message,
+                'data' =>$data,
+            ], $status);
+        });
 
         parent::boot();
     }
