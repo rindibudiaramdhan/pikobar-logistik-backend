@@ -153,29 +153,33 @@ class LogisticRequestController extends Controller
     public function setChangeStatusParam(Request $request, $param, $processType)
     {
         $dataUpdate = [];
+        $processType = $request->route()->getName();
+
+        $param = [
+            'approval_status' => 'required|string',
+            'approval_note' => $request->approval_status === Applicant::STATUS_REJECTED ? 'required' : ''
+        ];
+        $dataUpdate = [
+            'approval_status' => $request->approval_status,
+            'approval_note' => $request->approval_status === Applicant::STATUS_REJECTED ? $request->approval_note : ''
+        ];
+
         if ($request->route()->named('verification')) {
-            $processType = 'verification';
-            $param['verification_status'] = 'required|string';
-            $param['note'] = $request->verification_status === Applicant::STATUS_REJECTED ? 'required' : '';
-            $dataUpdate['verification_status'] = $request->verification_status;
-            $dataUpdate['note'] = $request->verification_status === Applicant::STATUS_REJECTED ? $request->note : '';
-        } else if ($request->route()->named('approval')) {
-            $processType = 'approval';
-            $param['approval_status'] = 'required|string';
-            $param['approval_note'] = $request->approval_status === Applicant::STATUS_REJECTED ? 'required' : '';
-            $dataUpdate['approval_status'] = $request->approval_status;
-            $dataUpdate['approval_note'] = $request->approval_status === Applicant::STATUS_REJECTED ? $request->approval_note : '';
-        } else {
-            $processType = 'final';
-            $param['approval_status'] = 'required|string';
-            $param['approval_note'] = $request->approval_status === Applicant::STATUS_REJECTED ? 'required' : '';
-            $dataUpdate['approval_status'] = $request->approval_status;
-            $dataUpdate['approval_note'] = $request->approval_status === Applicant::STATUS_REJECTED ? $request->approval_note : '';
+            $param = [
+                'verification_status' => 'required|string',
+                'note' => $request->verification_status === Applicant::STATUS_REJECTED ? 'required' : ''
+            ];
+            $dataUpdate = [
+                'verification_status' => $request->verification_status,
+                'note' => $request->verification_status === Applicant::STATUS_REJECTED ? $request->note : ''
+            ];
         }
 
-        $changeStatusParam['param'] = $param;
-        $changeStatusParam['processType'] = $processType;
-        $changeStatusParam['dataUpdate'] = $dataUpdate;
+        $changeStatusParam = [
+            'param' => $param,
+            'processType' => $processType,
+            'dataUpdate' => $dataUpdate,
+        ];
 
         return $changeStatusParam;
     }
