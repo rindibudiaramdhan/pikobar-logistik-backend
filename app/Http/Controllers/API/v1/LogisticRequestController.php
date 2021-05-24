@@ -24,11 +24,7 @@ class LogisticRequestController extends Controller
     {
         $limit = $request->input('limit', 10);
         $data = Agency::getList($request, false)->paginate($limit);
-        return response()->json([
-            'status' => Response::HTTP_OK,
-            'message' => 'success',
-            'data' => $data
-        ], Response::HTTP_OK);
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     public function finalList(Request $request)
@@ -50,11 +46,7 @@ class LogisticRequestController extends Controller
             'data' => $logisticRequest,
             'total' => count($logisticRequest)
         ];
-        return response()->json([
-            'status' => Response::HTTP_OK,
-            'message' => 'success',
-            'data' => $data
-        ], Response::HTTP_OK);
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     public function store(Request $request)
@@ -63,7 +55,7 @@ class LogisticRequestController extends Controller
         $responseData = LogisticRequest::responseDataStore();
         $param = LogisticRequest::setParamStore($request);
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
+        if ($response->getStatusCode() === 200) {
             $response = LogisticRequest::storeProcess($request, $responseData);
             Validation::setCompleteness($request);
         }
@@ -77,7 +69,7 @@ class LogisticRequestController extends Controller
         $param['applicant_id'] = 'required';
         $param['update_type'] = 'required';
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
+        if ($response->getStatusCode() === 200) {
             $response = LogisticRequest::saveData($request);
             Validation::setCompleteness($request);
         }
@@ -92,19 +84,12 @@ class LogisticRequestController extends Controller
                         ->where('agency.id', $id)
                         ->firstOrFail();
 
-        $response = response()->json([
-            'status' => Response::HTTP_OK,
-            'message' => 'success',
-            'data' => $data
-        ], Response::HTTP_OK);
+        $response = response()->format(Response::HTTP_OK, 'success', $data);
 
         $isNotAdmin = !in_array(JWTAuth::user()->roles, User::ADMIN_ROLE);
         $isDifferentDistrict = $data->location_district_code != JWTAuth::user()->code_district_city;
         if ($isNotAdmin && $isDifferentDistrict) {
-            $response = response()->json([
-                'status' => Response::HTTP_UNAUTHORIZED,
-                'message' => 'Permohonan anda salah, Anda tidak dapat membuka alamat URL tersebut'
-            ], Response::HTTP_UNAUTHORIZED);
+            $response = response()->format(Response::HTTP_UNAUTHORIZED, 'Permohonan anda salah, Anda tidak dapat membuka alamat URL tersebut');
         }
         return $response;
     }
@@ -113,7 +98,7 @@ class LogisticRequestController extends Controller
     {
         $param = ['agency_id' => 'required'];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
+        if ($response->getStatusCode() === 200) {
             $response = Needs::listNeed($request);
         }
         return $response;
@@ -123,7 +108,7 @@ class LogisticRequestController extends Controller
     {
         $param = ['file' => 'required|mimes:xlsx'];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
+        if ($response->getStatusCode() === 200) {
             $response = LogisticImport::importProcess($request);
         }
         Log::channel('dblogging')->debug('post:v1/logistic-request/import', $request->all());
@@ -143,11 +128,7 @@ class LogisticRequestController extends Controller
         $requestSummaryResult['totalApprovalRejected'] = Applicant::active()->createdBetween($request)->approvalRejected()->filter($request)->count();
 
         $data = Applicant::requestSummaryResult($requestSummaryResult);
-        return response()->json([
-            'status' => Response::HTTP_OK,
-            'message' => 'success',
-            'data' => $data
-        ], Response::HTTP_OK);
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     public function changeStatus(Request $request)
@@ -160,7 +141,7 @@ class LogisticRequestController extends Controller
         $processType = $changeStatusParam['processType'];
         $dataUpdate = $changeStatusParam['dataUpdate'];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
+        if ($response->getStatusCode() === 200) {
             $response = LogisticRequest::changeStatus($request, $processType, $dataUpdate);
             Validation::setCompleteness($request);
         }
@@ -206,11 +187,7 @@ class LogisticRequestController extends Controller
             'stock_checking_status' => 'required|string'
         ];
         $applicant = (Validation::validate($request, $param)) ? $this->updateApplicant($request) : null;
-        return response()->json([
-            'status' => Response::HTTP_OK,
-            'message' => 'success',
-            'data' => $applicant
-        ], Response::HTTP_OK);
+        return response()->format(Response::HTTP_OK, 'success', $applicant);
     }
 
     public function masterFaskesCheck($request)
@@ -221,13 +198,13 @@ class LogisticRequestController extends Controller
     public function alloableAgencyType($request)
     {
         $response = Validation::validateAgencyType($request->agency_type, ['4', '5']);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
+        if ($response->getStatusCode() === 200) {
             $param = [
                 'agency_type' => 'required|numeric',
                 'agency_name' => 'required|string'
             ];
             $response = Validation::validate($request, $param);
-            if ($response->getStatusCode() === Response::HTTP_OK) {
+            if ($response->getStatusCode() === 200) {
                 $masterFaskes = MasterFaskes::createFaskes($request);
                 $request['master_faskes_id'] = $masterFaskes->id;
                 $response = $request;
@@ -243,7 +220,7 @@ class LogisticRequestController extends Controller
         $param['applicant_id'] = 'required';
         $param['update_type'] = 'required';
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
+        if ($response->getStatusCode() === 200) {
             $applicant = Applicant::where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->firstOrFail();
             $response = FileUpload::storeLetterFile($request);
             Validation::setCompleteness($request);
@@ -258,7 +235,7 @@ class LogisticRequestController extends Controller
             'applicant_file' => 'required|mimes:jpeg,jpg,png,pdf|max:10240'
         ];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
+        if ($response->getStatusCode() === 200) {
             $request->request->add(['applicant_id' => $id]);
             $response = FileUpload::storeApplicantFile($request);
             $applicant = Applicant::where('id', '=', $request->applicant_id)->update(['file' => $response->id]);
@@ -276,15 +253,11 @@ class LogisticRequestController extends Controller
             'is_urgency' => 'required|numeric',
         ];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
+        if ($response->getStatusCode() === 200) {
             $model = Applicant::where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->first();
             $model->is_urgency = $request->is_urgency;
             $model->save();
-            $response = response()->json([
-                'status' => Response::HTTP_OK,
-                'message' => 'success',
-                'data' => $model
-            ], Response::HTTP_OK);
+            $response = response()->format(Response::HTTP_OK, 'success', $model);
             Validation::setCompleteness($request);
         }
         Log::channel('dblogging')->debug('post:v1/logistic-request/urgency', $request->all());
