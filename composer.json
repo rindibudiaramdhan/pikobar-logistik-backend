@@ -9,11 +9,20 @@
     "license": "MIT",
     "require": {
         "php": "^7.2.5",
+        "async-aws/core": "^1.10",
+        "async-aws/sns": "^1.2",
+        "async-aws/sqs": "^1.5",
+        "doctrine/dbal": "^2.13",
         "fideloper/proxy": "^4.2",
         "fruitcake/laravel-cors": "^1.0",
         "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "^7.0",
-        "laravel/tinker": "^2.0"
+        "laravel/tinker": "^2.0",
+        "league/flysystem-aws-s3-v3": "^1.0",
+        "maatwebsite/excel": "^3.1",
+        "sentry/sentry-laravel": "^2.5",
+        "spatie/enum": "^2.3",
+        "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {
         "facade/ignition": "^2.0",
