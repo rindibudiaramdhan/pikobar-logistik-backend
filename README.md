@@ -1,5 +1,6 @@
-[![Maintainability](https://api.codeclimate.com/v1/badges/78ce000cc84f4304d57d/maintainability)](https://codeclimate.com/github/jabardigitalservice/pikobar-logistik-api/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/4cc69dc0dac733eb9d36/maintainability)](https://codeclimate.com/github/rindibudiaramdhan/pikobar-logistik-backend/maintainability)
 
+[![Test Coverage](https://api.codeclimate.com/v1/badges/4cc69dc0dac733eb9d36/test_coverage)](https://codeclimate.com/github/rindibudiaramdhan/pikobar-logistik-backend/test_coverage)
 
 ## PIKOBAR LOGISTIK API
 Build with laravel 5.7 + MySql
