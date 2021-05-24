@@ -11,7 +11,6 @@ use App\Letter;
 use App\FileUpload;
 use App\Needs;
 use App\MasterFaskesType;
-use App\MasterFaskes;
 use App\City;
 use App\Subdistrict;
 use App\Village;
@@ -19,7 +18,6 @@ use App\Product;
 use App\MasterUnit;
 use App\ProductUnit;
 use App\Imports\LogisticImport;
-use DB;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 
@@ -61,18 +59,6 @@ class LogisticRequestImport implements ToCollection, WithStartRow
         }
 
         $this->data = $this->result;
-    }
-
-    public function getMasterFaskesType($data)
-    {
-        $masterFaskesType = MasterFaskesType::where('name', 'LIKE', "%{$data['jenis_instansi']}%")->first();
-        if (!$masterFaskesType) {
-            $masterFaskesType = MasterFaskesType::create([
-                'name' => $data['jenis_instansi'],
-                'is_imported' => true
-            ]);
-        }
-        return $masterFaskesType->id;
     }
 
     public function getDistrictCity($data)
@@ -170,11 +156,11 @@ class LogisticRequestImport implements ToCollection, WithStartRow
     {
         return 2;
     }
-    
+
     public function setData($dataImport)
     {
         $ret['createdAt'] = Date::excelToDateTimeObject($dataImport['tanggal_pengajuan']);
-        $ret['masterFaskesTypeId'] = $this->getMasterFaskesType($dataImport);
+        $ret['masterFaskesTypeId'] = MasterFaskesType::getType($dataImport);
         $dataImport['master_faskes_type_id'] = $ret['masterFaskesTypeId'];
         $ret['masterFaskesId'] = LogisticImport::getMasterFaskes($dataImport);
         $ret['districtCityId'] = $this->getDistrictCity($dataImport);
