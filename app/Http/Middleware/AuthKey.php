@@ -24,15 +24,7 @@ class AuthKey
         if (!isset($authKey)) {
             $response = response()->format(Response::HTTP_UNAUTHORIZED, 'Unauthenticated');
             if ($JWTtoken) {
-                try {
-                    $response = $this->isHasJWTToken($request, $next);
-                } catch (TokenExpiredException $e) {
-                    $response = $this->refreshToken($request);
-                } catch (JWTException $e) {
-                    $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage());
-                } catch (Exception $exception) {
-                    $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, 'token_failure');
-                }
+                $response = $this->isHasJWTToken($request, $next);
             }
         }
         return $response;
@@ -40,11 +32,19 @@ class AuthKey
 
     public function isHasJWTToken($request, Closure $next)
     {
-        if (!$user = JWTAuth::parseToken()->authenticate()) {
-            $response = response()->format(Response::HTTP_NOT_FOUND, 'user_not_found');
+        try {
+            if (!$user = JWTAuth::parseToken()->authenticate()) {
+                $response = response()->format(Response::HTTP_NOT_FOUND, 'user_not_found');
+            }
+            $request->merge(array("authenticated_user_id" => $user->id));
+            $response = $next($request);
+        } catch (TokenExpiredException $e) {
+            $response = $this->refreshToken($request);
+        } catch (JWTException $e) {
+            $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage());
+        } catch (Exception $exception) {
+            $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, 'token_failure');
         }
-        $request->merge(array("authenticated_user_id" => $user->id));
-        $response = $next($request);
         return $response;
     }
 
