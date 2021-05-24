@@ -1,0 +1,53 @@
+version: '3'
+services:
+
+  #PHP & APACHE
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-logistik-development
+    env_file: 
+      - .env.development
+    depends_on:
+      - database
+    volumes:
+      - vendor_data:/var/www/html/vendor
+    ports:
+      - "8080:80"
+    networks:
+      - internal
+    logging:
+        driver: "awslogs"
+        options:
+           awslogs-region: "ap-southeast-1"
+           awslogs-group: "pikobar-logistik"
+           awslogs-stream: "backend-staging"
+
+  #MySQL Service
+  database:
+    image: mysql:5.7
+    container_name: database-logistik-development
+    command: --max_allowed_packet=32505856
+    restart: always
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env.development
+    volumes:
+      - vol_mysql_data:/var/lib/mysql/
+    networks:
+      - internal
+
+#Docker Networks
+networks:
+  internal:
+    external:
+      name: gateway
+
+#Volumes
+volumes:
+  vol_mysql_data:
+    driver: local
+  vendor_data:
+    driver: local
