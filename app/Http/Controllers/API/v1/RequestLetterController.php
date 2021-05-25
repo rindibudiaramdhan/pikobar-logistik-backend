@@ -5,12 +5,12 @@ namespace App\Http\Controllers\API\v1;
 use Illuminate\Http\Request;
 use App\RequestLetter;
 use App\Http\Controllers\Controller;
-use App\Validation;
 use DB;
 use App\LogisticRealizationItems;
 use App\Applicant;
 use App\Http\Requests\RequestLetterListRequest;
 use App\Http\Requests\RequestLetterStoreRequest;
+use App\Http\Requests\RequestLetterUpdateRequest;
 
 class RequestLetterController extends Controller
 {
@@ -70,19 +70,15 @@ class RequestLetterController extends Controller
         return $response;
     }
 
-    public function update(request $request, $id)
+    public function update(RequestLetterUpdateRequest $request, $id)
     {
-        $param = [ 'applicant_id' => 'required|numeric' ];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
-            try {
-                $data = RequestLetter::find($id);
-                $data->applicant_id = $request->applicant_id;
-                $data->save();
-                $response = response()->format(200, 'success');
-            } catch (\Exception $exception) {
-                $response = response()->format(400, $exception->getMessage());
-            }
+        try {
+            $data = RequestLetter::find($id);
+            $data->applicant_id = $request->applicant_id;
+            $data->save();
+            $response = response()->format(Response::HTTP_OK, 'success');
+        } catch (\Exception $exception) {
+            $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
         }
         return $response;
     }
