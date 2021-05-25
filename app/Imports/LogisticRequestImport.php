@@ -101,26 +101,33 @@ class LogisticRequestImport implements ToCollection, WithStartRow
 
     public function getLogisticList($data)
     {
-        $logisticList1 = [];
-        $logisticList2 = [];
+        $logisticListItemArray = [];
         $logisticListArray = explode('&&', $data['list_logistik']);
         foreach ($logisticListArray as $logisticListItem) {
-            $logisticList1[] = explode('#', $logisticListItem);
+            $logisticListItemArray[] = explode('#', $logisticListItem);
         }
 
-        foreach ($logisticList1 as $logisticItem) {
+        $logisticList = $this->getLogisticListProcess($logisticListItemArray);
+
+        return $logisticList;
+    }
+
+    public function getLogisticListProcess($logisticListItemArray)
+    {
+        $logisticList = [];
+        foreach ($logisticListItemArray as $logisticItem) {
             if (count($logisticItem) == 6) {
                 $product = $this->getProduct($logisticItem);
                 if ($product) {
-                    $logisticItem['product_id'] = $product->id;
+                    $logisticItem['product_id'] = $product ? $product->id : '';
                 }
-                $logisticList2[] = $logisticItem;
+                $logisticList[] = $logisticItem;
             } else {
                 $this->invalidFormatLogistic[] = 'cek kembali tanda "#" pada item logistik ' . $logisticItem[0];
             }
         }
 
-        return $logisticList2;
+        return $logisticList;
     }
 
     public function getProduct($data)
