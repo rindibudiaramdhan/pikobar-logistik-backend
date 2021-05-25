@@ -5,41 +5,39 @@ namespace App\Http\Controllers\API\v1;
 use Illuminate\Http\Request;
 use App\RequestLetter;
 use App\Http\Controllers\Controller;
-use App\Validation;
 use DB;
 use App\LogisticRealizationItems;
 use App\Applicant;
+use App\Enums\ApplicantStatusEnum;
+use App\Http\Requests\RequestLetterListRequest;
+use App\Http\Requests\RequestLetterStoreRequest;
+use App\Http\Requests\RequestLetterUpdateRequest;
 
 class RequestLetterController extends Controller
 {
-    public function index(Request $request)
+    public function index(RequestLetterListRequest $request)
     {
         $data = [];
-        $param = [ 'outgoing_letter_id' => 'required' ];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
-            $limit = $request->input('limit', 10);
-            $defaultField = $this->defaultField();
-            $defaultField[] = 'applicants.verification_status';
-            $data = RequestLetter::select($defaultField);
-            $data = $this->defaultJoinTable($data);
-            $data = $data->where('request_letters.outgoing_letter_id', $request->outgoing_letter_id)
-            ->where(function ($query) use ($request) {
-                if ($request->filled('application_letter_number')) {
-                    $query->where('applicants.application_letter_number', 'LIKE', "%{$request->input('application_letter_number')}%");
-                }
-            })
-            ->where('verification_status', '=', Applicant::STATUS_VERIFIED)
-            ->where('applicants.approval_status', '=', Applicant::STATUS_APPROVED)
-            ->whereNotNull('applicants.finalized_by');
+        $limit = $request->input('limit', 10);
+        $defaultField = $this->defaultField();
+        $defaultField[] = 'applicants.verification_status';
+        $data = RequestLetter::select($defaultField);
+        $data = $this->defaultJoinTable($data);
+        $data = $data->where('request_letters.outgoing_letter_id', $request->outgoing_letter_id)
+                      ->where(function ($query) use ($request) {
+                          if ($request->has('application_letter_number')) {
+                            $query->where('applicants.application_letter_number', 'LIKE', "%{$request->input('application_letter_number')}%");
+                          }
+                      })
+                      ->where('verification_status', '=', ApplicantStatusEnum::verified())
+                      ->where('applicants.approval_status', '=', ApplicantStatusEnum::approved())
+                      ->whereNotNull('applicants.finalized_by');
 
-            $data = $data->orderBy('request_letters.id')->paginate($limit);
-            foreach ($data as $key => $val) {
-                $data[$key] = $this->getRealizationData($val);
-            }
-            $response = response()->format(200, 'success', $data);
+        $data = $data->orderBy('request_letters.id')->paginate($limit);
+        foreach ($data as $key => $val) {
+            $data[$key] = $this->getRealizationData($val);
         }
-        return $response;
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     public function show($id)
@@ -55,46 +53,33 @@ class RequestLetterController extends Controller
             $data[] = $this->getRealizationData($val);
         }
 
-        return response()->format(200, 'success', $data);
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
-    public function store(Request $request)
+    public function store(RequestLetterStoreRequest $request)
     {
-        $param = [
-            'outgoing_letter_id' => 'required|numeric',
-            'letter_request' => 'required',
-        ];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
-            DB::beginTransaction();
-            try {
-                $request_letter = RequestLetter::requestLetterStore($request);
-                $response = array(
-                    'request_letter' => $request_letter,
-                );
-                DB::commit();
-                $response = response()->format(200, 'success', $response);
-            } catch (\Exception $exception) {
-                DB::rollBack();
-                $response = response()->format(400, $exception->getMessage());
-            }
+        DB::beginTransaction();
+        try {
+            $request_letter = RequestLetter::requestLetterStore($request);
+            $response = ['request_letter' => $request_letter];
+            DB::commit();
+            $response = response()->format(Response::HTTP_OK, 'success', $response);
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
         }
         return $response;
     }
 
-    public function update(request $request, $id)
+    public function update(RequestLetterUpdateRequest $request, $id)
     {
-        $param = [ 'applicant_id' => 'required|numeric' ];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
-            try {
-                $data = RequestLetter::find($id);
-                $data->applicant_id = $request->applicant_id;
-                $data->save();
-                $response = response()->format(200, 'success');
-            } catch (\Exception $exception) {
-                $response = response()->format(400, $exception->getMessage());
-            }
+        try {
+            $data = RequestLetter::find($id);
+            $data->applicant_id = $request->applicant_id;
+            $data->save();
+            $response = response()->format(Response::HTTP_OK, 'success');
+        } catch (\Exception $exception) {
+            $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
         }
         return $response;
     }
@@ -107,9 +92,9 @@ class RequestLetterController extends Controller
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
-            return response()->format(400, $exception->getMessage());
+            return response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
         }
-        return response()->format(200, 'success', ['id' => $id]);
+        return response()->format(Response::HTTP_OK, 'success', ['id' => $id]);
     }
 
     /**
@@ -128,23 +113,23 @@ class RequestLetterController extends Controller
         try {
             $list = Applicant::select('id', 'application_letter_number', 'verification_status', 'approval_status')
                 ->where(function ($query) use ($request) {
-                    if ($request->filled('application_letter_number')) {
+                    if ($request->has('application_letter_number')) {
                         $query->where('application_letter_number', 'LIKE', "%{$request->input('application_letter_number')}%");
                     }
                 })
                 ->where('is_deleted', '!=', 1)
-                ->where('verification_status', '=', Applicant::STATUS_VERIFIED)
-                ->where('approval_status', '=', Applicant::STATUS_APPROVED)
+                ->where('verification_status', '=', ApplicantStatusEnum::verified())
+                ->where('approval_status', '=', ApplicantStatusEnum::approved())
                 ->where('application_letter_number', '!=', '')
                 ->whereNotNull('finalized_by')
                 ->get();
             //filterization
             $data = $this->checkAlreadyPicked($list, $request_letter_ignore);
         } catch (\Exception $exception) {
-            return response()->format(400, $exception->getMessage());
+            return response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
         }
 
-        return response()->format(200, 'success', $data);
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     /**
@@ -181,11 +166,18 @@ class RequestLetterController extends Controller
             if ($request_letter_ignore == $value['id']) {
                 $data[] = $value;
             } else {
-                $find = RequestLetter::where('applicant_id', $value['id'])->first();
-                if (!$find) {
-                    $data[] = $value;
-                }
+                $data[] = getRequestLetter($value)
             }
+        }
+
+        return $data;
+    }
+
+    public function getRequestLetter($value)
+    {
+        $find = RequestLetter::where('applicant_id', $value['id'])->first();
+        if (!$find) {
+            $data[] = $value;
         }
 
         return $data;

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Enums\ApplicantStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use DB;
 
@@ -28,40 +29,18 @@ class Agency extends Model
 
     public function getTotalQtyAttribute()
     {
-        return $this->logisticRealizationItems()
-                    ->acceptedStatusOnly('final_status')
-                    ->sum('final_quantity');
+        return $this->logisticRealizationItems()->acceptedStatusOnly('final_status')->sum('final_quantity');
     }
 
     public function getTypeItemCountAttribute()
     {
-        return $this->logisticRealizationItems()
-                    ->acceptedStatusOnly('final_status')
-                    ->count('material_group');
-    }
-
-    static function getList($request, $defaultOnly)
-    {
-        $data = self::select('agency.id', 'master_faskes_id', 'agency_type', 'agency_name', 'phone_number', 'location_district_code', 'location_subdistrict_code', 'location_village_code', 'location_address', 'location_district_code', 'completeness', 'master_faskes.is_reference', 'agency.created_at', 'agency.updated_at', 'total_covid_patients', 'total_isolation_room', 'total_bedroom', 'total_health_worker')
-                    ->getDefaultWith()
-                    ->leftJoin('applicants', 'agency.id', '=', 'applicants.agency_id')
-                    ->leftJoin('master_faskes', 'agency.master_faskes_id', '=', 'master_faskes.id');
-
-        if (!$defaultOnly) {
-            $data->withLogisticRequestData()
-                 ->whereHasApplicant($request)
-                 ->whereStatusCondition($request)
-                 ->whereHasFaskes($request)
-                 ->whereHasAgency($request);
-        }
-
-        return $data->setOrder($request);
+        return $this->logisticRealizationItems()->acceptedStatusOnly('final_status')->count('material_group');
     }
 
     public function scopeSetOrder($query, $request)
     {
-        $isRecommendationPhase = $request->input('verification_status') == Applicant::STATUS_VERIFIED && $request->input('approval_status') == Applicant::STATUS_NOT_APPROVED;
-        $isRealizationPhase = $request->input('verification_status') == Applicant::STATUS_VERIFIED && $request->input('approval_status') == Applicant::STATUS_APPROVED;
+        $isRecommendationPhase = $request->input('verification_status') == ApplicantStatusEnum::verified() && $request->input('approval_status') == ApplicantStatusEnum::not_approved();
+        $isRealizationPhase = $request->input('verification_status') == ApplicantStatusEnum::verified() && $request->input('approval_status') == ApplicantStatusEnum::approved();
         return $query->orderBy('applicants.is_urgency', 'desc')
                      ->orderBy('master_faskes.is_reference', 'desc')
                      ->when($isRealizationPhase, function ($query) {
@@ -180,9 +159,9 @@ class Agency extends Model
         ->when($request->has('status'), function ($query) use ($request) {
             $isReported = $request->input('status') == AcceptanceReport::STATUS_REPORTED;
 
-            $query->when($isReported, function ($query) use ($request) {
+            $query->when($isReported, function ($query) {
                 $query->has('acceptanceReport');
-            }, function ($query) use ($request) {
+            }, function ($query) {
                 $query->doesntHave('acceptanceReport');
             });
         });
@@ -194,8 +173,8 @@ class Agency extends Model
     {
         return $query->whereHas('applicant', function ($query) use ($request) {
             $query->when($request->input('is_rejected'), function ($query) {
-                $query->where('verification_status', Applicant::STATUS_REJECTED)
-                    ->orWhere('approval_status', Applicant::STATUS_REJECTED);
+                $query->where('verification_status', ApplicantStatusEnum::rejected())
+                    ->orWhere('approval_status', ApplicantStatusEnum::rejected());
             }, function ($query) use ($request) {
                 $query->when($request->input('verification_status'), function ($query) use ($request) {
                             $query->where('verification_status', $request->input('verification_status'));
@@ -297,5 +276,25 @@ class Agency extends Model
     public function finalizationItems()
     {
         return $this->logisticRealizationItems();
+    }
+
+    // Static Function List
+
+    static function getList($request, $defaultOnly)
+    {
+        $data = self::select('agency.id', 'master_faskes_id', 'agency_type', 'agency_name', 'phone_number', 'location_district_code', 'location_subdistrict_code', 'location_village_code', 'location_address', 'location_district_code', 'completeness', 'master_faskes.is_reference', 'agency.created_at', 'agency.updated_at', 'total_covid_patients', 'total_isolation_room', 'total_bedroom', 'total_health_worker')
+                    ->getDefaultWith()
+                    ->leftJoin('applicants', 'agency.id', '=', 'applicants.agency_id')
+                    ->leftJoin('master_faskes', 'agency.master_faskes_id', '=', 'master_faskes.id');
+
+        if (!$defaultOnly) {
+            $data->withLogisticRequestData()
+                 ->whereHasApplicant($request)
+                 ->whereStatusCondition($request)
+                 ->whereHasFaskes($request)
+                 ->whereHasAgency($request);
+        }
+
+        return $data->setOrder($request);
     }
 }

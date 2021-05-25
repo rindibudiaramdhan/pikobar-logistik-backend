@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\City;
 use App\Subdistrict;
 use App\Village;
-use App\Applicant;
+use App\Enums\ApplicantStatusEnum;
 
 class AreasController extends Controller
 {
@@ -77,19 +77,19 @@ class AreasController extends Controller
 
     public function getCitiesTotalRequest(Request $request)
     {
-        $startDate = $request->filled('start_date') ? $request->input('start_date') . ' 00:00:00' : '2020-01-01 00:00:00';
-        $endDate = $request->filled('end_date') ? $request->input('end_date') . ' 23:59:59' : date('Y-m-d H:i:s');
+        $startDate = $request->has('start_date') ? $request->input('start_date') . ' 00:00:00' : '2020-01-01 00:00:00';
+        $endDate = $request->has('end_date') ? $request->input('end_date') . ' 23:59:59' : date('Y-m-d H:i:s');
 
         try {
             $query = City::withCount([
                 'agency' => function ($query) use ($startDate, $endDate) {
                     return $query->join('applicants', 'applicants.agency_id', 'agency.id')
-                            ->where('applicants.verification_status', Applicant::STATUS_VERIFIED)
+                            ->where('applicants.verification_status', ApplicantStatusEnum::verified())
                             ->where('applicants.is_deleted', '!=', 1)
                             ->whereBetween('applicants.created_at', [$startDate, $endDate]);
                 }
                 ]);
-            if ($request->filled('sort')) {
+            if ($request->has('sort')) {
                 $query->orderBy('agency_count', $request->input('sort'));
             }
             $data = $query->get();

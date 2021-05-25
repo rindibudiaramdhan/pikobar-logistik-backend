@@ -20,15 +20,6 @@ class Validation
         return response()->format(422, 'Error Tidak Diketahui');
     }
 
-    static function validateAgencyType($agencyType, $allowable)
-    {
-        $response = response()->json(['status' => 'fail', 'message' => 'agency_type_value_is_not_accepted']);
-        if (in_array($agencyType, $allowable)) { //allowable agency_type: {agency_type 4 => Masyarakat Umum , agency_type 5 => Instansi Lainnya}
-            $response = response()->format(200, 'success');
-        }
-        return $response;
-    }
-
     public static function setCompleteness($request)
     {
         $updateCompleteness = Agency::where('agency_name', '')

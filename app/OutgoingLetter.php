@@ -5,6 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Applicant;
+use App\Enums\ApplicantStatusEnum;
 use App\RequestLetter;
 
 class OutgoingLetter extends Model
@@ -19,7 +20,7 @@ class OutgoingLetter extends Model
         'gtlog',
         'gtlogsurat',
     ];
-    
+
     protected $fillable = [
         'user_id',
         'letter_number',
@@ -38,7 +39,7 @@ class OutgoingLetter extends Model
     }
 
     /**
-     * Function to return filename if exists 
+     * Function to return filename if exists
      *
      * @param [int] $value
      * @return string / null
@@ -65,7 +66,7 @@ class OutgoingLetter extends Model
     {
         return RequestLetter::where('outgoing_letter_id', $this->id)
         ->join('applicants', 'applicants.id', '=', 'request_letters.applicant_id')
-        ->where('applicants.verification_status', '=', Applicant::STATUS_VERIFIED)
+        ->where('applicants.verification_status', '=', ApplicantStatusEnum::verified())
         ->count();
     }
 

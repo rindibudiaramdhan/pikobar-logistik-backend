@@ -4,8 +4,7 @@ namespace App\Http\Controllers\API\v1;
 
 use App\MasterFaskesType;
 use App\Agency;
-use DB;
-use App\Applicant;
+use App\Enums\ApplicantStatusEnum;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
@@ -14,13 +13,12 @@ class MasterFaskesTypeController extends Controller
 {
     public function index(Request $request)
     {
-
         try {
             $data = MasterFaskesType::where(function ($query) use ($request) {
-                if ($request->filled('is_imported')) {
+                if ($request->has('is_imported')) {
                     $query->where('is_imported', $request->input('is_imported'));
                 }
-                if ($request->filled('non_public')) {
+                if ($request->has('non_public')) {
                     $query->where('non_public', $request->input('non_public'));
                 }
             })->get();
@@ -39,7 +37,7 @@ class MasterFaskesTypeController extends Controller
                             $query->active()
                             ->createdBetween($request)
                             ->filter($request)
-                            ->where('verification_status', Applicant::STATUS_VERIFIED);
+                            ->where('verification_status', ApplicantStatusEnum::verified());
                         });
                     }
                 ])
@@ -64,7 +62,7 @@ class MasterFaskesTypeController extends Controller
                             $query->whereHas('applicant', function($query) use ($request) {
                                 $query->active()
                                     ->createdBetween($request)
-                                    ->where('verification_status', Applicant::STATUS_VERIFIED)
+                                    ->where('verification_status', ApplicantStatusEnum::verified())
                                     ->filter($request);
                             });
                         }])
@@ -75,7 +73,7 @@ class MasterFaskesTypeController extends Controller
                             ->whereHas('applicant', function($query) use ($request) {
                                 $query->active()
                                     ->createdBetween($request)
-                                    ->where('verification_status', Applicant::STATUS_VERIFIED)
+                                    ->where('verification_status', ApplicantStatusEnum::verified())
                                     ->filter($request);
                             })
                             ->groupBy('agency_type')->get();
