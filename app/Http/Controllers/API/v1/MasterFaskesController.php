@@ -8,7 +8,6 @@ use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMasterFaskesRequest;
 use App\Http\Requests\VerifyMasterFaskesRequest;
-use App\Validation;
 use Illuminate\Support\Facades\Storage;
 
 class MasterFaskesController extends Controller
@@ -16,18 +15,13 @@ class MasterFaskesController extends Controller
     public function index(Request $request)
     {
         $data = MasterFaskes::getFaskesList($request);
-        $response = response()->format(Response::HTTP_OK, 'success', $data);
-        return $response;
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     public function show($id)
     {
-        try {
-            $data =  MasterFaskes::findOrFail($id);
-            return response()->format(Response::HTTP_OK, 'success', $data);
-        } catch (\Exception $exception) {
-            return response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
-        }
+        $data =  MasterFaskes::findOrFail($id);
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     public function store(StoreMasterFaskesRequest $request)
