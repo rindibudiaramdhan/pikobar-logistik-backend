@@ -31,25 +31,7 @@ class LogisticRequestImport implements ToCollection, WithStartRow
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
-            $dataImport = [
-                'tanggal_pengajuan' => $row[0],
-                'jenis_instansi' => $row[1],
-                'nama_instansi' => $row[2],
-                'telepon_instansi' => $row[3],
-                'kabupaten' => $row[4],
-                'kecamatan' => $row[5],
-                'desa' => $row[6],
-                'alamat' => $row[7],
-                'nama_pemohon' => $row[8],
-                'jabatan_pemohon' => $row[9],
-                'email_pemohon' => $row[10],
-                'telepon_pemohon_1' => $row[11],
-                'telepon_pemohon_2' => $row[12],
-                'file_ktp' => $row[13],
-                'file_surat_permohonan' => $row[14],
-                'list_logistik' => $row[15],
-                'status_verifikasi' => $row[16]
-            ];
+            $dataImport = $this->setDataImport($row);
             $dataSet = $this->setData($dataImport);
             $dataImport['master_faskes_type_id'] = $dataSet['masterFaskesTypeId'];
 
@@ -59,6 +41,29 @@ class LogisticRequestImport implements ToCollection, WithStartRow
         }
 
         $this->data = $this->result;
+    }
+
+    public function setDataImport($row)
+    {
+        return [
+            'tanggal_pengajuan' => $row[0],
+            'jenis_instansi' => $row[1],
+            'nama_instansi' => $row[2],
+            'telepon_instansi' => $row[3],
+            'kabupaten' => $row[4],
+            'kecamatan' => $row[5],
+            'desa' => $row[6],
+            'alamat' => $row[7],
+            'nama_pemohon' => $row[8],
+            'jabatan_pemohon' => $row[9],
+            'email_pemohon' => $row[10],
+            'telepon_pemohon_1' => $row[11],
+            'telepon_pemohon_2' => $row[12],
+            'file_ktp' => $row[13],
+            'file_surat_permohonan' => $row[14],
+            'list_logistik' => $row[15],
+            'status_verifikasi' => $row[16]
+        ];
     }
 
     public function getDistrictCity($data)
