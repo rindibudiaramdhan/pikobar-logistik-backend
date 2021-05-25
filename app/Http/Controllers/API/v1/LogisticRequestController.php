@@ -12,6 +12,7 @@ use App\LogisticRequest;
 use App\FileUpload;
 use App\Http\Requests\LogisticRequestStoreRequest;
 use App\Http\Requests\LogisticRequestUrgencyChangeRequest;
+use App\Http\Requests\MasterFaskesRequest;
 use App\Http\Requests\UploadApplicantFileRequest;
 use App\Http\Requests\UploadLetterRequest;
 use App\Imports\LogisticImport;
@@ -193,21 +194,11 @@ class LogisticRequestController extends Controller
         return $request = (!MasterFaskes::find($request->master_faskes_id)) ? $this->alloableAgencyType($request) : $request;
     }
 
-    public function alloableAgencyType($request)
+    public function alloableAgencyType(MasterFaskesRequest $request)
     {
-        $response = Validation::validateAgencyType($request->agency_type, ['4', '5']);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
-            $param = [
-                'agency_type' => 'required|numeric',
-                'agency_name' => 'required|string'
-            ];
-            $response = Validation::validate($request, $param);
-            if ($response->getStatusCode() === Response::HTTP_OK) {
-                $masterFaskes = MasterFaskes::createFaskes($request);
-                $request['master_faskes_id'] = $masterFaskes->id;
-                $response = $request;
-            }
-        }
+        $masterFaskes = MasterFaskes::createFaskes($request);
+        $request['master_faskes_id'] = $masterFaskes->id;
+        $response = $request;
         return $response;
     }
 
