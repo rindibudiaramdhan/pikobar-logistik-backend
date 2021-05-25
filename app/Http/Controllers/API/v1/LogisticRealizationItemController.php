@@ -77,12 +77,12 @@ class LogisticRealizationItemController extends Controller
         $params = $cleansingData['param'];
         $request = $cleansingData['request'];
         $response = Validation::validate($request, $params);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $applicant = Applicant::select('id')->where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->first();
             //Get Material from PosLog by Id
             $request = $this->getPosLogData($request);
             $realization = $this->realizationStore($request);
-            $response = response()->format(200, 'success');
+            $response = response()->format(Response::HTTP_OK, 'success');
         }
         return $response;
     }
@@ -98,10 +98,10 @@ class LogisticRealizationItemController extends Controller
             'agency_id' => 'required'
         ];
         $response = Validation::validate($request, $params);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $limit = $request->input('limit', 3);
             $data = LogisticRealizationItems::getList($request);
-            $response = response()->format(200, 'success', $data);
+            $response = response()->format(Response::HTTP_OK, 'success', $data);
         }
         return $response;
     }
@@ -122,9 +122,9 @@ class LogisticRealizationItemController extends Controller
         $params = $cleansingData['param'];
         $request = $cleansingData['request'];
         $response = Validation::validate($request, $params);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $response = $this->isValidStatus($request);
-            if ($response->getStatusCode() === 200) {
+            if ($response->getStatusCode() === Response::HTTP_OK) {
                 $response = $this->updateProcess($request, $id);
             }
         }
@@ -142,14 +142,14 @@ class LogisticRealizationItemController extends Controller
             $request = $this->getPosLogData($request);
             $realization = $this->realizationUpdate($request, $id);
 
-            $data = array(
+            $data = [
                 'realization' => $realization
-            );
+            ];
             DB::commit();
-            $response = response()->format(200, 'success', $data);
+            $response = response()->format(Response::HTTP_OK, 'success', $data);
         } catch (\Exception $exception) {
             DB::rollBack();
-            $response = response()->format(400, $exception->getMessage());
+            $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
         }
 
         return $response;
@@ -354,7 +354,7 @@ class LogisticRealizationItemController extends Controller
 
     public function isValidStatus($request)
     {
-        $response = response()->format(200, 'success');
+        $response = response()->format(Response::HTTP_OK, 'success');
         if (!in_array($request->status, LogisticRealizationItems::STATUS)) {
             $response = response()->json(['status' => 'fail', 'message' => 'verification_status_value_is_not_accepted']);
         }
