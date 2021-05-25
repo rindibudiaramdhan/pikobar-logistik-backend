@@ -171,36 +171,44 @@ class LogisticRealizationItemController extends Controller
         $findOne = LogisticRealizationItems::find($id);
         if ($findOne) {
             //updating latest log realization record
-            if ($request->input('store_type') === 'recommendation') {
-                $store_type = [
-                    'agency_id' => $request->input('agency_id'),
-                    'applicant_id' => $request->input('applicant_id'),
-                    'product_id' => $request->input('product_id'),
-                    'product_name' => $request->input('product_name'),
-                    'realization_unit' => $request->input('recommendation_unit'),
-                    'material_group' => $request->input('material_group'),
-                    'realization_quantity' => $request->input('recommendation_quantity'),
-                    'realization_date' => $request->input('recommendation_date'),
-                    'status' => $request->input('status'),
-                    'updated_by' => JWTAuth::user()->id,
-                    'recommendation_by' => JWTAuth::user()->id,
-                    'recommendation_at' => date('Y-m-d H:i:s')
-                ];
-            } else {
-                $store_type['final_product_id'] = $request->input('product_id');
-                $store_type['final_product_name'] = $request->input('product_name');
-                $store_type['final_quantity'] = $request->input('realization_quantity');
-                $store_type['final_unit'] = $request['realization_unit'];
-                $store_type['final_date'] = $request->input('realization_date');
-                $store_type['final_status'] = $request->input('status');
-                $store_type['final_by'] = JWTAuth::user()->id;
-                $store_type['final_at'] = date('Y-m-d H:i:s');
-            }
+            $store_type = $this->updateLatestLogRealizationItem($request);
 
             $findOne->fill($store_type);
             $findOne->save();
         }
         return $findOne;
+    }
+
+    //updating latest log realization record
+    public function updateLatestLogRealizationItem($request)
+    {
+        if ($request->input('store_type') === 'recommendation') {
+            $store_type = [
+                'agency_id' => $request->input('agency_id'),
+                'applicant_id' => $request->input('applicant_id'),
+                'product_id' => $request->input('product_id'),
+                'product_name' => $request->input('product_name'),
+                'realization_unit' => $request->input('recommendation_unit'),
+                'material_group' => $request->input('material_group'),
+                'realization_quantity' => $request->input('recommendation_quantity'),
+                'realization_date' => $request->input('recommendation_date'),
+                'status' => $request->input('status'),
+                'updated_by' => JWTAuth::user()->id,
+                'recommendation_by' => JWTAuth::user()->id,
+                'recommendation_at' => date('Y-m-d H:i:s')
+            ];
+        } else {
+            $store_type['final_product_id'] = $request->input('product_id');
+            $store_type['final_product_name'] = $request->input('product_name');
+            $store_type['final_quantity'] = $request->input('realization_quantity');
+            $store_type['final_unit'] = $request['realization_unit'];
+            $store_type['final_date'] = $request->input('realization_date');
+            $store_type['final_status'] = $request->input('status');
+            $store_type['final_by'] = JWTAuth::user()->id;
+            $store_type['final_at'] = date('Y-m-d H:i:s');
+        }
+
+        return $store_type;
     }
 
     public function getPosLogData($request)
