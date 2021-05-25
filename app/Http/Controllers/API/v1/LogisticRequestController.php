@@ -11,6 +11,7 @@ use App\Applicant;
 use App\LogisticRequest;
 use App\FileUpload;
 use App\Http\Requests\LogisticRequestStoreRequest;
+use App\Http\Requests\LogisticRequestUrgencyChangeRequest;
 use App\Imports\LogisticImport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\MasterFaskes;
@@ -240,21 +241,14 @@ class LogisticRequestController extends Controller
         return $response;
     }
 
-    public function urgencyChange(Request $request)
+    public function urgencyChange(LogisticRequestUrgencyChangeRequest $request)
     {
-        $param = [
-            'agency_id' => 'required|numeric',
-            'applicant_id' => 'required|numeric',
-            'is_urgency' => 'required|numeric',
-        ];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
-            $model = Applicant::where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->first();
-            $model->is_urgency = $request->is_urgency;
-            $model->save();
-            $response = response()->format(Response::HTTP_OK, 'success', $model);
-            Validation::setCompleteness($request);
-        }
+
+        $model = Applicant::where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->first();
+        $model->is_urgency = $request->is_urgency;
+        $model->save();
+        $response = response()->format(Response::HTTP_OK, 'success', $model);
+        Validation::setCompleteness($request);
         Log::channel('dblogging')->debug('post:v1/logistic-request/urgency', $request->all());
         return $response;
     }
