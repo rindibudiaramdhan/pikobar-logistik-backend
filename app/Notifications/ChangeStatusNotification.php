@@ -65,24 +65,10 @@ class ChangeStatusNotification extends Notification
     {
         switch ($this->phase) {
             case 'rekomendasi':
-                $this->action = 'Rekomendasi Salur';
-                $this->sendTo = 'PIC Rekomendasi Salur';
-                $this->state = 'surat permohonan logistik';
-                $this->position = 'telah berada pada tahapan rekomendasi salur.';
-                $this->nextStep  = 'rekomendasi salur';
-                $this->nextAction  = 'rekomendasi salur';
-                $this->lastMessage = 'Adapun untuk melakukan '. $this->nextStep .' dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu dilakukan '. $this->nextAction .': ' . $this->link;
-                $this->content = 'Saat ini pada aplikasi permohonan logistik '. $this->state .' dengan kode: ' . $this->id .' '. $this->position .' Mohon ditindaklanjuti untuk melakukan '. $this->nextStep .' terhadap permohonan tersebut. '. $this->lastMessage;
+                $this->recommendationMessage();
                 break;
             case 'realisasi':
-                $this->action = 'Realisasi Salur';
-                $this->sendTo = 'PIC Realisasi Salur';
-                $this->state = 'surat permohonan logistik';
-                $this->position = 'telah berada pada tahapan realisasi salur';
-                $this->nextStep = 'realisasi salur';
-                $this->nextAction = 'realisasi salur';
-                $this->lastMessage = 'Adapun untuk melakukan '. $this->nextStep .' dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu dilakukan '. $this->nextAction .': ' . $this->link;
-                $this->content = 'Saat ini pada aplikasi permohonan logistik '. $this->state .' dengan kode: ' . $this->id .' '. $this->position .' Mohon ditindaklanjuti untuk melakukan '. $this->nextStep .' terhadap permohonan tersebut. '. $this->lastMessage;
+                $this->realizationMessage();
                 break;
         }
 
@@ -94,6 +80,30 @@ class ChangeStatusNotification extends Notification
                 Kepada Yth.
                 ' . $this->sendTo . ' '
                 . $this->content;
+    }
+
+    public function recommendationMessage()
+    {
+        $this->action = 'Rekomendasi Salur';
+        $this->sendTo = 'PIC Rekomendasi Salur';
+        $this->state = 'surat permohonan logistik';
+        $this->position = 'telah berada pada tahapan rekomendasi salur.';
+        $this->nextStep  = 'rekomendasi salur';
+        $this->nextAction  = 'rekomendasi salur';
+        $this->lastMessage = 'Adapun untuk melakukan '. $this->nextStep .' dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu dilakukan '. $this->nextAction .': ' . $this->link;
+        $this->content = 'Saat ini pada aplikasi permohonan logistik '. $this->state .' dengan kode: ' . $this->id .' '. $this->position .' Mohon ditindaklanjuti untuk melakukan '. $this->nextStep .' terhadap permohonan tersebut. '. $this->lastMessage;
+    }
+
+    public function realizationMessage()
+    {
+        $this->action = 'Realisasi Salur';
+        $this->sendTo = 'PIC Realisasi Salur';
+        $this->state = 'surat permohonan logistik';
+        $this->position = 'telah berada pada tahapan realisasi salur';
+        $this->nextStep = 'realisasi salur';
+        $this->nextAction = 'realisasi salur';
+        $this->lastMessage = 'Adapun untuk melakukan '. $this->nextStep .' dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu dilakukan '. $this->nextAction .': ' . $this->link;
+        $this->content = 'Saat ini pada aplikasi permohonan logistik '. $this->state .' dengan kode: ' . $this->id .' '. $this->position .' Mohon ditindaklanjuti untuk melakukan '. $this->nextStep .' terhadap permohonan tersebut. '. $this->lastMessage;
     }
 
     /**
