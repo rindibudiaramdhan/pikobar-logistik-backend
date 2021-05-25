@@ -9,37 +9,33 @@ use App\Validation;
 use DB;
 use App\LogisticRealizationItems;
 use App\Applicant;
+use App\Http\Requests\RequestLetterListRequest;
 
 class RequestLetterController extends Controller
 {
-    public function index(Request $request)
+    public function index(RequestLetterListRequest $request)
     {
         $data = [];
-        $param = [ 'outgoing_letter_id' => 'required' ];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
-            $limit = $request->input('limit', 10);
-            $defaultField = $this->defaultField();
-            $defaultField[] = 'applicants.verification_status';
-            $data = RequestLetter::select($defaultField);
-            $data = $this->defaultJoinTable($data);
-            $data = $data->where('request_letters.outgoing_letter_id', $request->outgoing_letter_id)
-            ->where(function ($query) use ($request) {
-                if ($request->filled('application_letter_number')) {
-                    $query->where('applicants.application_letter_number', 'LIKE', "%{$request->input('application_letter_number')}%");
-                }
-            })
-            ->where('verification_status', '=', Applicant::STATUS_VERIFIED)
-            ->where('applicants.approval_status', '=', Applicant::STATUS_APPROVED)
-            ->whereNotNull('applicants.finalized_by');
+        $limit = $request->input('limit', 10);
+        $defaultField = $this->defaultField();
+        $defaultField[] = 'applicants.verification_status';
+        $data = RequestLetter::select($defaultField);
+        $data = $this->defaultJoinTable($data);
+        $data = $data->where('request_letters.outgoing_letter_id', $request->outgoing_letter_id)
+                      ->where(function ($query) use ($request) {
+                          if ($request->filled('application_letter_number')) {
+                            $query->where('applicants.application_letter_number', 'LIKE', "%{$request->input('application_letter_number')}%");
+                          }
+                      })
+                      ->where('verification_status', '=', Applicant::STATUS_VERIFIED)
+                      ->where('applicants.approval_status', '=', Applicant::STATUS_APPROVED)
+                      ->whereNotNull('applicants.finalized_by');
 
-            $data = $data->orderBy('request_letters.id')->paginate($limit);
-            foreach ($data as $key => $val) {
-                $data[$key] = $this->getRealizationData($val);
-            }
-            $response = response()->format(200, 'success', $data);
+        $data = $data->orderBy('request_letters.id')->paginate($limit);
+        foreach ($data as $key => $val) {
+            $data[$key] = $this->getRealizationData($val);
         }
-        return $response;
+        return response()->format(200, 'success', $data);
     }
 
     public function show($id)
