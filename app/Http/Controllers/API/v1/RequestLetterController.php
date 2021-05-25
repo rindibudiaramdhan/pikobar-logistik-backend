@@ -181,11 +181,18 @@ class RequestLetterController extends Controller
             if ($request_letter_ignore == $value['id']) {
                 $data[] = $value;
             } else {
-                $find = RequestLetter::where('applicant_id', $value['id'])->first();
-                if (!$find) {
-                    $data[] = $value;
-                }
+                $data[] = getRequestLetter($value)
             }
+        }
+
+        return $data;
+    }
+
+    public function getRequestLetter($value)
+    {
+        $find = RequestLetter::where('applicant_id', $value['id'])->first();
+        if (!$find) {
+            $data[] = $value;
         }
 
         return $data;
