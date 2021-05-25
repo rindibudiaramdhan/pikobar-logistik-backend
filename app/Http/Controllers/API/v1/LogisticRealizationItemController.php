@@ -198,14 +198,7 @@ class LogisticRealizationItemController extends Controller
                 'recommendation_at' => date('Y-m-d H:i:s')
             ];
         } else {
-            $store_type['final_product_id'] = $request->input('product_id');
-            $store_type['final_product_name'] = $request->input('product_name');
-            $store_type['final_quantity'] = $request->input('realization_quantity');
-            $store_type['final_unit'] = $request['realization_unit'];
-            $store_type['final_date'] = $request->input('realization_date');
-            $store_type['final_status'] = $request->input('status');
-            $store_type['final_by'] = JWTAuth::user()->id;
-            $store_type['final_at'] = date('Y-m-d H:i:s');
+            $store_type = $this->setStoreFinal($request);
         }
 
         return $store_type;
@@ -254,6 +247,11 @@ class LogisticRealizationItemController extends Controller
     public function setStoreType($request)
     {
         $store_type = $this->setStoreFinal($request);
+
+        $store_type['need_id'] = $request->input('need_id');
+        $store_type['agency_id'] = $request->input('agency_id');
+        $store_type['applicant_id'] = $request->input('applicant_id');
+        $store_type['created_by'] = JWTAuth::user()->id;
         if ($request->input('store_type') === 'recommendation') {
             $store_type = $this->setStoreRecommendation($request);
         }
@@ -262,20 +260,14 @@ class LogisticRealizationItemController extends Controller
 
     public function setStoreFinal(Request $request)
     {
-        return [
-            'need_id' => $request->input('need_id'),
-            'agency_id' => $request->input('agency_id'),
-            'applicant_id' => $request->input('applicant_id'),
-            'created_by' => JWTAuth::user()->id,
-            'final_product_id' => $request->input('product_id'),
-            'final_product_name' => $request->input('product_name'),
-            'final_quantity' => $request->input('realization_quantity'),
-            'final_unit' => $request['realization_unit'],
-            'final_date' => $request->input('realization_date'),
-            'final_status' => $request->input('status'),
-            'final_by' => JWTAuth::user()->id,
-            'final_at' => date('Y-m-d H:i:s')
-        ];
+        $data['final_product_id'] = $request->input('product_id');
+        $data['final_product_name'] = $request->input('product_name');
+        $data['final_quantity'] = $request->input('realization_quantity');
+        $data['final_unit'] = $request['realization_unit'];
+        $data['final_date'] = $request->input('realization_date');
+        $data['final_status'] = $request->input('status');
+        $data['final_by'] = JWTAuth::user()->id;
+        $data['final_at'] = date('Y-m-d H:i:s');
     }
 
     public function setStoreRecommendation(Request $request)
