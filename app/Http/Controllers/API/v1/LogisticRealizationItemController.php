@@ -125,25 +125,33 @@ class LogisticRealizationItemController extends Controller
         if ($response->getStatusCode() === 200) {
             $response = $this->isValidStatus($request);
             if ($response->getStatusCode() === 200) {
-                DB::beginTransaction();
-                try {
-                    $request['applicant_id'] = $request->input('applicant_id', $request->input('agency_id'));
-
-                    //Get Material from PosLog by Id
-                    $request = $this->getPosLogData($request);
-                    $realization = $this->realizationUpdate($request, $id);
-
-                    $data = array(
-                        'realization' => $realization
-                    );
-                    DB::commit();
-                    $response = response()->format(200, 'success', $data);
-                } catch (\Exception $exception) {
-                    DB::rollBack();
-                    $response = response()->format(400, $exception->getMessage());
-                }
+                $response = $this->updateProcess($request, $id);
             }
         }
+        return $response;
+    }
+
+    public function updateProcess($request, $id)
+    {
+        $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, 'begin transaction error');
+        DB::beginTransaction();
+        try {
+            $request['applicant_id'] = $request->input('applicant_id', $request->input('agency_id'));
+
+            //Get Material from PosLog by Id
+            $request = $this->getPosLogData($request);
+            $realization = $this->realizationUpdate($request, $id);
+
+            $data = array(
+                'realization' => $realization
+            );
+            DB::commit();
+            $response = response()->format(200, 'success', $data);
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $response = response()->format(400, $exception->getMessage());
+        }
+
         return $response;
     }
 
