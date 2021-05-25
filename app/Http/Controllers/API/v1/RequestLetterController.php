@@ -36,7 +36,7 @@ class RequestLetterController extends Controller
         foreach ($data as $key => $val) {
             $data[$key] = $this->getRealizationData($val);
         }
-        return response()->format(200, 'success', $data);
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     public function show($id)
@@ -52,7 +52,7 @@ class RequestLetterController extends Controller
             $data[] = $this->getRealizationData($val);
         }
 
-        return response()->format(200, 'success', $data);
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     public function store(RequestLetterStoreRequest $request)
@@ -91,9 +91,9 @@ class RequestLetterController extends Controller
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
-            return response()->format(400, $exception->getMessage());
+            return response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
         }
-        return response()->format(200, 'success', ['id' => $id]);
+        return response()->format(Response::HTTP_OK, 'success', ['id' => $id]);
     }
 
     /**
@@ -125,10 +125,10 @@ class RequestLetterController extends Controller
             //filterization
             $data = $this->checkAlreadyPicked($list, $request_letter_ignore);
         } catch (\Exception $exception) {
-            return response()->format(400, $exception->getMessage());
+            return response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
         }
 
-        return response()->format(200, 'success', $data);
+        return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
     /**
