@@ -6,6 +6,7 @@ use App\MasterFaskes;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreMasterFaskesRequest;
 use App\Validation;
 use Illuminate\Support\Facades\Storage;
 
@@ -28,30 +29,17 @@ class MasterFaskesController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(StoreMasterFaskesRequest $request)
     {
         $model = new MasterFaskes();
-        $param = [
-            'nomor_izin_sarana' => 'required',
-            'nama_faskes' => 'required',
-            'id_tipe_faskes' => 'required',
-            'nama_atasan' => 'required',
-            'point_latitude_longitude' => 'string',
-            'permit_file' => 'required|mimes:jpeg,jpg,png|max:10240'
-        ];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
-            try {
-                $model->fill($request->input());
-                $model->verification_status = 'not_verified';
-                $model->is_imported = 0;
-                $model->permit_file = $this->permitLetterStore($request);
-                $model->save();
-                $response = response()->format(Response::HTTP_OK, 'success', $model);
-            } catch (\Exception $e) {
-                $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage());
-            }
-        }
+
+        $model->fill($request->input());
+        $model->verification_status = 'not_verified';
+        $model->is_imported = 0;
+        $model->permit_file = $this->permitLetterStore($request);
+        $model->save();
+        $response = response()->format(Response::HTTP_OK, 'success', $model);
+
         return $response;
     }
 
