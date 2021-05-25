@@ -187,7 +187,6 @@ class LogisticRequestImport implements ToCollection, WithStartRow
 
         if (count($this->invalidFormatLogistic) > 0) {
             $dataImport['notes'] .= implode(',', $this->invalidFormatLogistic) . ';';
-            $this->result[] = $dataImport;
             $isValid = false;
         }
 
@@ -199,13 +198,11 @@ class LogisticRequestImport implements ToCollection, WithStartRow
         if ($isValid) {
             $this->insertData($dataSet, $dataImport);
             $dataImport['status'] = 'valid';
-            $dataImport['notes'] = '';
         }
 
         $this->result[] = $dataImport;
         $this->invalidItemLogistic = [];
         $this->invalidFormatLogistic = [];
-
     }
 
     public function insertData($dataSet, $dataImport)
