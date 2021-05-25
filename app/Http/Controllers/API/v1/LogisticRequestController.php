@@ -10,6 +10,7 @@ use App\Agency;
 use App\Applicant;
 use App\LogisticRequest;
 use App\FileUpload;
+use App\Http\Requests\LogisticRequestStoreRequest;
 use App\Imports\LogisticImport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\MasterFaskes;
@@ -49,16 +50,12 @@ class LogisticRequestController extends Controller
         return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
-    public function store(Request $request)
+    public function store(LogisticRequestStoreRequest $request)
     {
         $request = $this->masterFaskesCheck($request);
         $responseData = LogisticRequest::responseDataStore();
-        $param = LogisticRequest::setParamStore($request);
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
-            $response = LogisticRequest::storeProcess($request, $responseData);
-            Validation::setCompleteness($request);
-        }
+        $response = LogisticRequest::storeProcess($request, $responseData);
+        Validation::setCompleteness($request);
         Log::channel('dblogging')->debug('post:v1/logistic-request', $request->all());
         return $response;
     }
@@ -69,7 +66,7 @@ class LogisticRequestController extends Controller
         $param['applicant_id'] = 'required';
         $param['update_type'] = 'required';
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $response = LogisticRequest::saveData($request);
             Validation::setCompleteness($request);
         }
@@ -98,7 +95,7 @@ class LogisticRequestController extends Controller
     {
         $param = ['agency_id' => 'required'];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $response = Needs::listNeed($request);
         }
         return $response;
@@ -108,7 +105,7 @@ class LogisticRequestController extends Controller
     {
         $param = ['file' => 'required|mimes:xlsx'];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $response = LogisticImport::importProcess($request);
         }
         Log::channel('dblogging')->debug('post:v1/logistic-request/import', $request->all());
@@ -141,7 +138,7 @@ class LogisticRequestController extends Controller
         $processType = $changeStatusParam['processType'];
         $dataUpdate = $changeStatusParam['dataUpdate'];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $response = LogisticRequest::changeStatus($request, $processType, $dataUpdate);
             Validation::setCompleteness($request);
         }
@@ -196,13 +193,13 @@ class LogisticRequestController extends Controller
     public function alloableAgencyType($request)
     {
         $response = Validation::validateAgencyType($request->agency_type, ['4', '5']);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $param = [
                 'agency_type' => 'required|numeric',
                 'agency_name' => 'required|string'
             ];
             $response = Validation::validate($request, $param);
-            if ($response->getStatusCode() === 200) {
+            if ($response->getStatusCode() === Response::HTTP_OK) {
                 $masterFaskes = MasterFaskes::createFaskes($request);
                 $request['master_faskes_id'] = $masterFaskes->id;
                 $response = $request;
@@ -218,7 +215,7 @@ class LogisticRequestController extends Controller
         $param['applicant_id'] = 'required';
         $param['update_type'] = 'required';
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $applicant = Applicant::where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->firstOrFail();
             $response = FileUpload::storeLetterFile($request);
             Validation::setCompleteness($request);
@@ -233,7 +230,7 @@ class LogisticRequestController extends Controller
             'applicant_file' => 'required|mimes:jpeg,jpg,png,pdf|max:10240'
         ];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $request->request->add(['applicant_id' => $id]);
             $response = FileUpload::storeApplicantFile($request);
             $applicant = Applicant::where('id', '=', $request->applicant_id)->update(['file' => $response->id]);
@@ -251,7 +248,7 @@ class LogisticRequestController extends Controller
             'is_urgency' => 'required|numeric',
         ];
         $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === Response::HTTP_OK) {
             $model = Applicant::where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->first();
             $model->is_urgency = $request->is_urgency;
             $model->save();
