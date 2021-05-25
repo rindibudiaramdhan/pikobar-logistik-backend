@@ -31,25 +31,7 @@ class LogisticRequestImport implements ToCollection, WithStartRow
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
-            $dataImport = [
-                'tanggal_pengajuan' => $row[0],
-                'jenis_instansi' => $row[1],
-                'nama_instansi' => $row[2],
-                'telepon_instansi' => $row[3],
-                'kabupaten' => $row[4],
-                'kecamatan' => $row[5],
-                'desa' => $row[6],
-                'alamat' => $row[7],
-                'nama_pemohon' => $row[8],
-                'jabatan_pemohon' => $row[9],
-                'email_pemohon' => $row[10],
-                'telepon_pemohon_1' => $row[11],
-                'telepon_pemohon_2' => $row[12],
-                'file_ktp' => $row[13],
-                'file_surat_permohonan' => $row[14],
-                'list_logistik' => $row[15],
-                'status_verifikasi' => $row[16]
-            ];
+            $dataImport = $this->setDataImport($row);
             $dataSet = $this->setData($dataImport);
             $dataImport['master_faskes_type_id'] = $dataSet['masterFaskesTypeId'];
 
@@ -61,13 +43,27 @@ class LogisticRequestImport implements ToCollection, WithStartRow
         $this->data = $this->result;
     }
 
-    public function getDistrictCity($data)
+    public function setDataImport($row)
     {
-        $city = City::where('kemendagri_kabupaten_nama', 'LIKE', "%{$data['kabupaten']}%")->first();
-        if ($city) {
-            return $city->kemendagri_kabupaten_kode;
-        }
-        return false;
+        return [
+            'tanggal_pengajuan' => $row[0],
+            'jenis_instansi' => $row[1],
+            'nama_instansi' => $row[2],
+            'telepon_instansi' => $row[3],
+            'kabupaten' => $row[4],
+            'kecamatan' => $row[5],
+            'desa' => $row[6],
+            'alamat' => $row[7],
+            'nama_pemohon' => $row[8],
+            'jabatan_pemohon' => $row[9],
+            'email_pemohon' => $row[10],
+            'telepon_pemohon_1' => $row[11],
+            'telepon_pemohon_2' => $row[12],
+            'file_ktp' => $row[13],
+            'file_surat_permohonan' => $row[14],
+            'list_logistik' => $row[15],
+            'status_verifikasi' => $row[16]
+        ];
     }
 
     public function getSubDistrict($data)
@@ -96,26 +92,36 @@ class LogisticRequestImport implements ToCollection, WithStartRow
 
     public function getLogisticList($data)
     {
-        $logisticList1 = [];
-        $logisticList2 = [];
+        $logisticList = [];
         $logisticListArray = explode('&&', $data['list_logistik']);
         foreach ($logisticListArray as $logisticListItem) {
-            $logisticList1[] = explode('#', $logisticListItem);
+            $logisticList[] = explode('#', $logisticListItem);
         }
 
-        foreach ($logisticList1 as $logisticItem) {
+        return $this->getLogisticItemList($logisticList);
+    }
+
+    public function getLogisticItemList($logisticList)
+    {
+        $logisticItems = [];
+        foreach ($logisticList as $key => $logisticItem) {
             if (count($logisticItem) == 6) {
-                $product = $this->getProduct($logisticItem);
-                if ($product) {
-                    $logisticItem['product_id'] = $product->id;
-                }
-                $logisticList2[] = $logisticItem;
+                $logisticItems[] = $this->getLogisticItemId($logisticItem);
             } else {
-                $this->invalidFormatLogistic[] = 'cek kembali tanda "#" pada item logistik ' . $logisticItem[0];
+                $this->invalidFormatLogistic[] = 'cek kembali tanda "#" pada item logistik ' . $logisticItem[$key];
             }
         }
 
-        return $logisticList2;
+        return $logisticItems;
+    }
+
+    public function getLogisticItemId($logisticItem)
+    {
+        $product = $this->getProduct($logisticItem);
+        if ($product) {
+            $logisticItem['product_id'] = $product->id;
+        }
+        return $logisticItem;
     }
 
     public function getProduct($data)
@@ -163,7 +169,7 @@ class LogisticRequestImport implements ToCollection, WithStartRow
         $ret['masterFaskesTypeId'] = MasterFaskesType::getType($dataImport);
         $dataImport['master_faskes_type_id'] = $ret['masterFaskesTypeId'];
         $ret['masterFaskesId'] = LogisticImport::getMasterFaskes($dataImport);
-        $ret['districtCityId'] = $this->getDistrictCity($dataImport);
+        $ret['districtCityId'] = City::getCityCodeByName($dataImport['kabupaten']);
         $ret['subDistrictId'] = $this->getSubDistrict($dataImport);
         $ret['villageId'] = $this->getVillage($dataImport);
         $ret['logisticList'] = $this->getLogisticList($dataImport);
@@ -173,21 +179,33 @@ class LogisticRequestImport implements ToCollection, WithStartRow
 
     public function validatingDataImport($dataSet, $dataImport)
     {
-        $dataImport['status'] = 'invalid';
+        $isValid = true;
+        $dataImport['notes'] = '';
         if (!$dataSet['masterFaskesTypeId']) {
-            $dataImport['notes'] = 'Jenis instansi tidak terdaftar di data master';
-        } else if (!$dataSet['masterFaskesId']) {
-            $dataImport['notes'] = 'Nama instansi tidak terdaftar di data master';
-        } else if (count($this->invalidFormatLogistic) > 0) {
-            $dataImport['notes'] = implode(",", $this->invalidFormatLogistic);
-            $this->result[] = $dataImport;
-        } else if (count($this->invalidItemLogistic) > 0) {
-            $dataImport['notes'] = implode(",", $this->invalidItemLogistic);
-        } else {
+            $dataImport['notes'] = 'Jenis instansi tidak terdaftar di data master;';
+            $isValid = false;
+        }
+
+        if (!$dataSet['masterFaskesId']) {
+            $dataImport['notes'] .= 'Nama instansi tidak terdaftar di data master;';
+            $isValid = false;
+        }
+
+        if (count($this->invalidFormatLogistic) > 0) {
+            $dataImport['notes'] .= implode(',', $this->invalidFormatLogistic) . ';';
+            $isValid = false;
+        }
+
+        if (count($this->invalidItemLogistic) > 0) {
+            $dataImport['notes'] .= implode(',', $this->invalidItemLogistic) . ';';
+            $isValid = false;
+        }
+
+        if ($isValid) {
             $this->insertData($dataSet, $dataImport);
             $dataImport['status'] = 'valid';
-            $dataImport['notes'] = '';
         }
+
         $this->result[] = $dataImport;
         $this->invalidItemLogistic = [];
         $this->invalidFormatLogistic = [];

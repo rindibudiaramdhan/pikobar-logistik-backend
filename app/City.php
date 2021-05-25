@@ -20,4 +20,13 @@ class City extends Model {
     {
         return $this->hasMany('App\Agency', 'location_district_code', 'kemendagri_kabupaten_kode');
     }
+
+    static function getCityCodeByName($kemendagri_kabupaten_nama)
+    {
+        $city = City::where('kemendagri_kabupaten_nama', 'LIKE', "%{$kemendagri_kabupaten_nama}%")->first();
+        if ($city) {
+            return $city->kemendagri_kabupaten_kode;
+        }
+        return false;
+    }
 }

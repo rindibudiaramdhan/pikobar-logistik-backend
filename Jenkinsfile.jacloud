@@ -23,9 +23,6 @@ def secretsProd = [
     [envVar: 'IMAGE_API', vaultKey: 'IMAGE_API'],
     [envVar: 'IMAGE_NGINX', vaultKey: 'IMAGE_NGINX'],
     [envVar: 'IMAGE_DATABASE', vaultKey: 'IMAGE_DATABASE'],
-    [envVar: 'PELAPORAN_API_BASE_URL', vaultKey: 'PELAPORAN_API_BASE_URL'],
-    [envVar: 'PELAPORAN_AUTH_USER', vaultKey: 'PELAPORAN_AUTH_USER'],
-    [envVar: 'PELAPORAN_AUTH_PASSWORD', vaultKey: 'PELAPORAN_AUTH_PASSWORD'],
     [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'AWS_ACCESS_KEY_ID'],
     [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'AWS_SECRET_ACCESS_KEY'],
     [envVar: 'AWS_DEFAULT_REGION', vaultKey: 'AWS_DEFAULT_REGION'],
@@ -67,7 +64,7 @@ pipeline {
 
         KUBECONFIG_LOGISTIK_STAGING = "${KUBECONFIG_LOGISTIK_STAGING}"
         CLIENT_KEY_LOGISTIK_STAGING = "${CLIENT_KEY_LOGISTIK_STAGING}"
-        CLUSTER_NAME_JACLOUD = "k8s-jacloud001-JDS-RANCHER-NODE-03"        
+        CLUSTER_NAME_JACLOUD = "k8s-jacloud001-JDS-RANCHER-NODE-03"
     }
 
     options {
@@ -84,7 +81,7 @@ pipeline {
 
             steps {
 
-                withVault([configuration: configuration, vaultSecrets: secretsProd]) { 
+                withVault([configuration: configuration, vaultSecrets: secretsProd]) {
                         sh 'env'
                         sh 'docker --version'
                         sh 'echo ${VERSION}'
@@ -128,7 +125,7 @@ pipeline {
 
          stage ('deploy to kubernetes jabarcloud'){
             agent {
-                docker { 
+                docker {
                     image 'dtzar/helm-kubectl:3.3.1'
                     args '-u root'
                 }
@@ -136,8 +133,8 @@ pipeline {
 
             steps {
                     // deploy kubernetes cluster production
-                    withVault([configuration: configuration, vaultSecrets: secretsProd]) {   
-            
+                    withVault([configuration: configuration, vaultSecrets: secretsProd]) {
+
                         sh 'sed -i "s/%VERSION%/${VERSION}/g" kubernetes/deployment-logistik-api.yaml'
                         sh 'sed -i "s/%APP_NAME%/${APP_NAME}/g" kubernetes/configmap-logistik-api.yaml'
                         sh 'sed -i "s/%APP_ENV%/${APP_ENV}/g" kubernetes/configmap-logistik-api.yaml'
@@ -165,10 +162,6 @@ pipeline {
                         sh 'sed -i "s/%IMAGE_API%/${IMAGE_API}/g" kubernetes/configmap-logistik-api.yaml'
                         sh 'sed -i "s/%IMAGE_NGINX%/${IMAGE_NGINX}/g" kubernetes/configmap-logistik-api.yaml'
                         sh 'sed -i "s/%IMAGE_DATABASE%/${IMAGE_DATABASE}/g" kubernetes/configmap-logistik-api.yaml'
-
-                        sh 'sed -i "s/%PELAPORAN_API_BASE_URL%/${PELAPORAN_API_BASE_URL}/g" kubernetes/configmap-logistik-api.yaml'
-                        sh 'sed -i "s/%PELAPORAN_AUTH_USER%/${PELAPORAN_AUTH_USER}/g" kubernetes/configmap-logistik-api.yaml'
-                        sh 'sed -i "s/%PELAPORAN_AUTH_PASSWORD%/${PELAPORAN_AUTH_PASSWORD}/g" kubernetes/secret-logistik-api.yaml'
 
                         sh 'sed -i "s/%AWS_ACCESS_KEY_ID%/${AWS_ACCESS_KEY_ID}/g" kubernetes/configmap-logistik-api.yaml'
                         sh 'sed -i "s/%AWS_SECRET_ACCESS_KEY%/${AWS_SECRET_ACCESS_KEY}/g" kubernetes/configmap-logistik-api.yaml'
@@ -232,7 +225,7 @@ pipeline {
 
 
 
-        
-    } 
+
+    }
 
 }
