@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Enums\LogisticRealizationItemsStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use DB;
@@ -14,22 +15,14 @@ class LogisticRealizationItems extends Model
     use SoftDeletes;
 
     const STATUS = [
-        'delivered',
-        'not_delivered',
-        'approved',
-        'not_approved',
-        'not_available',
-        'replaced',
-        'not_yet_fulfilled'
+        LogisticRealizationItemsStatusEnum::delivered(),
+        LogisticRealizationItemsStatusEnum::not_delivered(),
+        LogisticRealizationItemsStatusEnum::approved(),
+        LogisticRealizationItemsStatusEnum::not_approved(),
+        LogisticRealizationItemsStatusEnum::not_available(),
+        LogisticRealizationItemsStatusEnum::replaced(),
+        LogisticRealizationItemsStatusEnum::not_yet_fulfilled()
     ];
-
-    const STATUS_DELIVERED = 'delivered';
-    const STATUS_NOT_DELIVERED = 'not_delivered';
-    const STATUS_APPROVED = 'approved';
-    const STATUS_NOT_APPROVED = 'not_approved';
-    const STATUS_NOT_AVAILABLE = 'not_available';
-    const STATUS_REPLACED = 'replaced';
-    const STATUS_NOT_YET_FULFILLED = 'not_yet_fulfilled';
 
     protected $table = 'logistic_realization_items';
 
@@ -114,6 +107,13 @@ class LogisticRealizationItems extends Model
     {
         return $value ? $value : 'PCS';
     }
+
+    public function scopeAcceptedStatusOnly($query, $field)
+    {
+        return $query->whereNotIn($field, [LogisticRealizationItemsStatusEnum::not_available(), LogisticRealizationItemsStatusEnum::not_yet_fulfilled()]);
+    }
+
+    // Static Functions List
 
     static function storeData($store_type)
     {
@@ -259,11 +259,6 @@ class LogisticRealizationItems extends Model
         $fields[] = 'final_at';
         $fields[] = 'final_by';
         return $fields;
-    }
-
-    public function scopeAcceptedStatusOnly($query, $field)
-    {
-        return $query->whereNotIn($field, [self::STATUS_NOT_AVAILABLE, self::STATUS_NOT_YET_FULFILLED]);
     }
 
     static function setStoreRecommendation(Request $request)
