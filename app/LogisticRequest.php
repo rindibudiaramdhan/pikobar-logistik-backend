@@ -14,6 +14,7 @@ use App\Notifications\ChangeStatusNotification;
 use JWTAuth;
 use App\Applicant;
 use App\Enums\ApplicantStatusEnum;
+use App\Http\Requests\LogisticRequestStoreRequest;
 use App\LogisticRealizationItems;
 use App\Validation;
 use Illuminate\Support\Facades\DB;
@@ -30,33 +31,6 @@ class LogisticRequest extends Model
             'need' => null,
             'letter' => null,
         ];
-    }
-
-    static function setParamStore(Request $request)
-    {
-        $param = [
-            'master_faskes_id' => 'required|numeric',
-            'agency_type' => 'required|numeric',
-            'agency_name' => 'required|string',
-            'location_district_code' => 'required|string',
-            'location_subdistrict_code' => 'required|string',
-            'location_village_code' => 'required|string',
-            'applicant_name' => 'required|string',
-            'primary_phone_number' => 'required|numeric',
-            'logistic_request' => 'required',
-            'letter_file' => 'required|mimes:jpeg,jpg,png,pdf|max:10240',
-            'application_letter_number' => 'required|string'
-        ];
-
-        $agencyTypeExcept = [1, 2, 3];
-        if (in_array($request->agency_type, $agencyTypeExcept)) {
-            $param['total_covid_patients'] = 'required|numeric';
-            $param['total_isolation_room'] = 'required|numeric';
-            $param['total_bedroom'] = 'required|numeric';
-            $param['total_health_worker'] = 'required|numeric';
-        }
-
-        return $param;
     }
 
     static function storeProcess(Request $request, $responseData)

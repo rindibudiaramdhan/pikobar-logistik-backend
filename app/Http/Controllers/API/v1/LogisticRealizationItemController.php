@@ -13,32 +13,27 @@ use App\Applicant;
 use App\Enums\ApplicantStatusEnum;
 use App\Enums\LogisticRealizationItemsStatusEnum;
 use App\Http\Requests\ListLogisticRealizationItemRequest;
+use App\Http\Requests\LogisticRealizationItemStoreRequest;
+use App\Http\Requests\LogisticRealizationItemUpdateRequest;
 use App\PoslogProduct;
 use Log;
 
 class LogisticRealizationItemController extends Controller
 {
-    public function store(Request $request)
+    public function store(LogisticRealizationItemStoreRequest $request)
     {
-        $params = [
-            'agency_id' => 'numeric',
-            'applicant_id' => 'numeric',
-            'need_id' => 'numeric',
-            'status' => 'string'
-        ];
-        $cleansingData = $this->cleansingData($request, $params);
+        $cleansingData = $this->cleansingData($request, []);
         $request = $cleansingData['request'];
-        $response = Validation::validate($request, $cleansingData['param']);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
-            if ($this->isApplicantExists($request, 'store')) {
-                $response = $this->storeProcedure($request, $response);
-            }
+
+        if ($this->isApplicantExists($request, 'store')) {
+            $response = $this->storeProcedure($request);
         }
+
         Log::channel('dblogging')->debug('post:v1/logistic-request/realization', $request->all());
         return $response;
     }
 
-    public function storeProcedure($request, $response)
+    public function storeProcedure($request)
     {
         try {
             $model = new LogisticRealizationItems();
@@ -66,27 +61,16 @@ class LogisticRealizationItemController extends Controller
         }
     }
 
-    public function add(Request $request)
+    public function add(LogisticRealizationItemStoreRequest $request)
     {
-        $params = [
-            'agency_id' => 'numeric',
-            'applicant_id' => 'numeric',
-            'product_id' => 'string',
-            'usage' => 'string',
-            'priority' => 'string',
-            'status' => 'string'
-        ];
-        $cleansingData = $this->cleansingData($request, $params);
-        $params = $cleansingData['param'];
+        $request->request->add(['by_admin' => true]);
+        $cleansingData = $this->cleansingData($request, []);
         $request = $cleansingData['request'];
-        $response = Validation::validate($request, $params);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
-            $applicant = Applicant::select('id')->where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->first();
-            //Get Material from PosLog by Id
-            $request = $this->getPosLogData($request);
-            $realization = $this->realizationStore($request);
-            $response = response()->format(Response::HTTP_OK, 'success');
-        }
+        $applicant = Applicant::select('id')->where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->first();
+        //Get Material from PosLog by Id
+        $request = $this->getPosLogData($request);
+        $realization = $this->realizationStore($request);
+        $response = response()->format(Response::HTTP_OK, 'success');
         return $response;
     }
 
@@ -107,22 +91,14 @@ class LogisticRealizationItemController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(LogisticRealizationItemUpdateRequest $request, $id)
     {
-        $params = [
-            'agency_id' => 'numeric',
-            'product_id' => 'string',
-            'status' => 'string'
-        ];
-        $cleansingData = $this->cleansingData($request, $params);
-        $params = $cleansingData['param'];
+        $cleansingData = $this->cleansingData($request, []);
         $request = $cleansingData['request'];
-        $response = Validation::validate($request, $params);
+
+        $response = $this->isValidStatus($request);
         if ($response->getStatusCode() === Response::HTTP_OK) {
-            $response = $this->isValidStatus($request);
-            if ($response->getStatusCode() === Response::HTTP_OK) {
-                $response = $this->updateProcess($request, $id);
-            }
+            $response = $this->updateProcess($request, $id);
         }
         return $response;
     }

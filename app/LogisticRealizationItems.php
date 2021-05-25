@@ -14,16 +14,6 @@ class LogisticRealizationItems extends Model
 {
     use SoftDeletes;
 
-    const STATUS = [
-        LogisticRealizationItemsStatusEnum::delivered(),
-        LogisticRealizationItemsStatusEnum::not_delivered(),
-        LogisticRealizationItemsStatusEnum::approved(),
-        LogisticRealizationItemsStatusEnum::not_approved(),
-        LogisticRealizationItemsStatusEnum::not_available(),
-        LogisticRealizationItemsStatusEnum::replaced(),
-        LogisticRealizationItemsStatusEnum::not_yet_fulfilled()
-    ];
-
     protected $table = 'logistic_realization_items';
 
     protected $fillable = [
@@ -61,6 +51,7 @@ class LogisticRealizationItems extends Model
     static function deleteData($id)
     {
         $result = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, 'Gagal Terhapus', $id);
+
         DB::beginTransaction();
         try {
             $deleteRealization = self::where('id', $id)->delete();
