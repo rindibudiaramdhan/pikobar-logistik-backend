@@ -14,17 +14,7 @@ class LogisticRequestResource extends JsonResource
    */
   public function toArray($request)
   {
-    $need = [];
-    foreach ($this['need'] as $key => $value) {
-      $need[] = array(
-        'product_id' => $value->product_id,
-        'brand' => $value->brand,
-        'quantity' => $value->quantity,
-        'unit' => $value->unit,
-        'usage' => $value->usage,
-        'priority' => $value->priority,
-      );
-    }
+    $need = $this->getNeed();
 
     return [
       'agency_type' => $this['agency']->agency_type,
@@ -41,5 +31,21 @@ class LogisticRequestResource extends JsonResource
       'secondary_phone_number' => $this['applicant']->secondary_phone_number,
       'need' => $need
     ];
+  }
+
+  public function getNeed()
+  {
+    $need = [];
+    foreach ($this['need'] as $key => $value) {
+      $need[] = array(
+        'product_id' => $value->product_id,
+        'brand' => $value->brand,
+        'quantity' => $value->quantity,
+        'unit' => $value->unit,
+        'usage' => $value->usage,
+        'priority' => $value->priority,
+      );
+    }
+    return $need;
   }
 }
