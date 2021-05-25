@@ -14,18 +14,6 @@ class ChangeStatusNotification extends Notification
     public $link;
     public $id;
     public $phase;
-    // Message Component Variables
-    public $header = '*Info Logistik PIKOBAR*';
-    public $action = 'Verifikasi Administrasi';
-    public $sendTo = 'PIC Surat';
-    public $state = 'telah masuk surat permohonan logistik baru';
-    public $position = '';
-    public $nextStep = 'verifikasi administrasi dokumen';
-    public $nextAction = 'diverifikasi';
-    public $content;
-    public $lastMessage = 'Surat permohonan tersebut dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu ' . $this->nextAction .': ' . $this->link;
-
-
     /**
      * Create a new notification instance.
      *
@@ -63,47 +51,37 @@ class ChangeStatusNotification extends Notification
 
     public function setMessage()
     {
+        $message = '';
         switch ($this->phase) {
-            case 'rekomendasi':
-                $this->recommendationMessage();
-                break;
-            case 'realisasi':
-                $this->realizationMessage();
-                break;
-        }
-
-        $this->content = 'Saat ini pada aplikasi permohonan logistik '. $this->state .' dengan kode: ' . $this->id .' '. $this->position .' Mohon ditindaklanjuti untuk melakukan '. $this->nextStep .' terhadap permohonan tersebut. '. $this->lastMessage;
-
-        return $this->header .
-                '*Butuh ' . $this->action . ', kode : ' . $this->id .'*
+            case 'surat':
+                $message = '*Info Logistik PIKOBAR*
+                *Butuh Verifikasi Administrasi, kode : ' . $this->id .'*
 
                 Kepada Yth.
-                ' . $this->sendTo . ' '
-                . $this->content;
-    }
+                PIC Surat
 
-    public function recommendationMessage()
-    {
-        $this->action = 'Rekomendasi Salur';
-        $this->sendTo = 'PIC Rekomendasi Salur';
-        $this->state = 'surat permohonan logistik';
-        $this->position = 'telah berada pada tahapan rekomendasi salur.';
-        $this->nextStep  = 'rekomendasi salur';
-        $this->nextAction  = 'rekomendasi salur';
-        $this->lastMessage = 'Adapun untuk melakukan '. $this->nextStep .' dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu dilakukan '. $this->nextAction .': ' . $this->link;
-        $this->content = 'Saat ini pada aplikasi permohonan logistik '. $this->state .' dengan kode: ' . $this->id .' '. $this->position .' Mohon ditindaklanjuti untuk melakukan '. $this->nextStep .' terhadap permohonan tersebut. '. $this->lastMessage;
-    }
+                Saat ini pada aplikasi permohonan logistik telah masuk surat permohonan logistik baru dengan kode: ' . $this->id .' Mohon ditindaklanjuti untuk melakukan verifikasi administrasi dokumen permohonan tersebut. Surat permohonan tersebut dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu diverifikasi: ' . $this->link;
+                break;
+            case 'rekomendasi':
+                $message = '*Info Logistik PIKOBAR*
+                *Butuh Rekomendasi Salur, kode : ' . $this->id .'*
 
-    public function realizationMessage()
-    {
-        $this->action = 'Realisasi Salur';
-        $this->sendTo = 'PIC Realisasi Salur';
-        $this->state = 'surat permohonan logistik';
-        $this->position = 'telah berada pada tahapan realisasi salur';
-        $this->nextStep = 'realisasi salur';
-        $this->nextAction = 'realisasi salur';
-        $this->lastMessage = 'Adapun untuk melakukan '. $this->nextStep .' dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu dilakukan '. $this->nextAction .': ' . $this->link;
-        $this->content = 'Saat ini pada aplikasi permohonan logistik '. $this->state .' dengan kode: ' . $this->id .' '. $this->position .' Mohon ditindaklanjuti untuk melakukan '. $this->nextStep .' terhadap permohonan tersebut. '. $this->lastMessage;
+                Kepada Yth.
+                PIC Rekomendasi Salur
+
+                Saat ini pada aplikasi permohonan logistik surat permohonan logistik dengan kode: ' . $this->id . ' telah berada pada tahapan rekomendasi salur. Mohon ditindaklanjuti untuk melakukan rekomendasi salur terhadap permohonan tersebut. Adapun untuk melakukan rekomendasi salur dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu dilakukan rekomendasi salur: ' . $this->link;
+                break;
+            case 'realisasi':
+                $message = '*Info Logistik PIKOBAR*
+                *Butuh Realisasi Salur, kode : ' . $this->id .'*
+
+                Kepada Yth.
+                PIC Realisasi Salur
+
+                Saat ini pada aplikasi permohonan logistik surat permohonan logistik dengan kode: ' . $this->id . ' telah berada pada tahapan realisasi salur. Mohon ditindaklanjuti untuk melakukan realisasi salur terhadap permohonan tersebut. Adapun untuk melakukan realisasi salur dapat diakses dengan menggunakan aplikasi permohonan logistik. Berikut ini link permohonan yang perlu dilakukan realisasi salur: ' . $this->link;
+                break;
+        }
+        return $message;
     }
 
     /**
