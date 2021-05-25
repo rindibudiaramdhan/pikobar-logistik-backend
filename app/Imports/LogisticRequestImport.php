@@ -101,33 +101,36 @@ class LogisticRequestImport implements ToCollection, WithStartRow
 
     public function getLogisticList($data)
     {
-        $logisticListItemArray = [];
+        $logisticList = [];
         $logisticListArray = explode('&&', $data['list_logistik']);
         foreach ($logisticListArray as $logisticListItem) {
-            $logisticListItemArray[] = explode('#', $logisticListItem);
+            $logisticList[] = explode('#', $logisticListItem);
         }
 
-        $logisticList = $this->getLogisticListProcess($logisticListItemArray);
-
-        return $logisticList;
+        return $this->getLogisticItemList($logisticList);
     }
 
-    public function getLogisticListProcess($logisticListItemArray)
+    public function getLogisticItemList($logisticList)
     {
-        $logisticList = [];
-        foreach ($logisticListItemArray as $logisticItem) {
+        $logisticItems = [];
+        foreach ($logisticList as $key => $logisticItem) {
             if (count($logisticItem) == 6) {
-                $product = $this->getProduct($logisticItem);
-                if ($product) {
-                    $logisticItem['product_id'] = $product ? $product->id : '';
-                }
-                $logisticList[] = $logisticItem;
+                $logisticItems[] = $this->getLogisticItemId($logisticItem);
             } else {
-                $this->invalidFormatLogistic[] = 'cek kembali tanda "#" pada item logistik ' . $logisticItem[0];
+                $this->invalidFormatLogistic[] = 'cek kembali tanda "#" pada item logistik ' . $logisticItem[$key];
             }
         }
 
-        return $logisticList;
+        return $logisticItems;
+    }
+
+    public function getLogisticItemId($logisticItem)
+    {
+        $product = $this->getProduct($logisticItem);
+        if ($product) {
+            $logisticItem['product_id'] = $product->id;
+        }
+        return $logisticItem;
     }
 
     public function getProduct($data)
