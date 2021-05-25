@@ -4,8 +4,6 @@ namespace App\Http\Controllers\API\v1;
 
 use App\MasterFaskesType;
 use App\Agency;
-use DB;
-use App\Applicant;
 use App\Enums\ApplicantStatusEnum;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,7 +13,6 @@ class MasterFaskesTypeController extends Controller
 {
     public function index(Request $request)
     {
-
         try {
             $data = MasterFaskesType::where(function ($query) use ($request) {
                 if ($request->has('is_imported')) {

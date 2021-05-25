@@ -18,7 +18,6 @@ use App\LogisticRealizationItems;
 use App\Validation;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\LogisticRequestResource;
-use App\WmsJabar;
 
 class LogisticRequest extends Model
 {

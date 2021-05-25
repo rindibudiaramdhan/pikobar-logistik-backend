@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\City;
 use App\Subdistrict;
 use App\Village;
-use App\Applicant;
+use App\Enums\ApplicantStatusEnum;
 
 class AreasController extends Controller
 {
