@@ -29,34 +29,12 @@ class Agency extends Model
 
     public function getTotalQtyAttribute()
     {
-        return $this->logisticRealizationItems()
-                    ->acceptedStatusOnly('final_status')
-                    ->sum('final_quantity');
+        return $this->logisticRealizationItems()->acceptedStatusOnly('final_status')->sum('final_quantity');
     }
 
     public function getTypeItemCountAttribute()
     {
-        return $this->logisticRealizationItems()
-                    ->acceptedStatusOnly('final_status')
-                    ->count('material_group');
-    }
-
-    static function getList($request, $defaultOnly)
-    {
-        $data = self::select('agency.id', 'master_faskes_id', 'agency_type', 'agency_name', 'phone_number', 'location_district_code', 'location_subdistrict_code', 'location_village_code', 'location_address', 'location_district_code', 'completeness', 'master_faskes.is_reference', 'agency.created_at', 'agency.updated_at', 'total_covid_patients', 'total_isolation_room', 'total_bedroom', 'total_health_worker')
-                    ->getDefaultWith()
-                    ->leftJoin('applicants', 'agency.id', '=', 'applicants.agency_id')
-                    ->leftJoin('master_faskes', 'agency.master_faskes_id', '=', 'master_faskes.id');
-
-        if (!$defaultOnly) {
-            $data->withLogisticRequestData()
-                 ->whereHasApplicant($request)
-                 ->whereStatusCondition($request)
-                 ->whereHasFaskes($request)
-                 ->whereHasAgency($request);
-        }
-
-        return $data->setOrder($request);
+        return $this->logisticRealizationItems()->acceptedStatusOnly('final_status')->count('material_group');
     }
 
     public function scopeSetOrder($query, $request)
@@ -181,9 +159,9 @@ class Agency extends Model
         ->when($request->has('status'), function ($query) use ($request) {
             $isReported = $request->input('status') == AcceptanceReport::STATUS_REPORTED;
 
-            $query->when($isReported, function ($query) use ($request) {
+            $query->when($isReported, function ($query) {
                 $query->has('acceptanceReport');
-            }, function ($query) use ($request) {
+            }, function ($query) {
                 $query->doesntHave('acceptanceReport');
             });
         });
@@ -298,5 +276,25 @@ class Agency extends Model
     public function finalizationItems()
     {
         return $this->logisticRealizationItems();
+    }
+
+    // Static Function List
+
+    static function getList($request, $defaultOnly)
+    {
+        $data = self::select('agency.id', 'master_faskes_id', 'agency_type', 'agency_name', 'phone_number', 'location_district_code', 'location_subdistrict_code', 'location_village_code', 'location_address', 'location_district_code', 'completeness', 'master_faskes.is_reference', 'agency.created_at', 'agency.updated_at', 'total_covid_patients', 'total_isolation_room', 'total_bedroom', 'total_health_worker')
+                    ->getDefaultWith()
+                    ->leftJoin('applicants', 'agency.id', '=', 'applicants.agency_id')
+                    ->leftJoin('master_faskes', 'agency.master_faskes_id', '=', 'master_faskes.id');
+
+        if (!$defaultOnly) {
+            $data->withLogisticRequestData()
+                 ->whereHasApplicant($request)
+                 ->whereStatusCondition($request)
+                 ->whereHasFaskes($request)
+                 ->whereHasAgency($request);
+        }
+
+        return $data->setOrder($request);
     }
 }
