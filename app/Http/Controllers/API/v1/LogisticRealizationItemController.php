@@ -254,7 +254,7 @@ class LogisticRealizationItemController extends Controller
         $store_type['applicant_id'] = $request->input('applicant_id');
         $store_type['created_by'] = JWTAuth::user()->id;
         if ($request->input('store_type') === 'recommendation') {
-            $store_type = $this->setStoreRecommendation($request);
+            $store_type = LogisticRealizationItems::setStoreRecommendation($request);
         }
         return $store_type;
     }
@@ -269,25 +269,6 @@ class LogisticRealizationItemController extends Controller
         $data['final_status'] = $request->input('status');
         $data['final_by'] = JWTAuth::user()->id;
         $data['final_at'] = date('Y-m-d H:i:s');
-    }
-
-    public function setStoreRecommendation(Request $request)
-    {
-        return [
-            'need_id' => $request->input('need_id'),
-            'agency_id' => $request->input('agency_id'),
-            'applicant_id' => $request->input('applicant_id'),
-            'product_id' => $request->input('product_id'),
-            'product_name' => $request->input('product_name'),
-            'realization_unit' => $request->input('recommendation_unit'),
-            'material_group' => $request->input('material_group'),
-            'realization_quantity' => $request->input('recommendation_quantity'),
-            'realization_date' => $request->input('recommendation_date'),
-            'status' => $request->input('status'),
-            'created_by' => JWTAuth::user()->id,
-            'recommendation_by' => JWTAuth::user()->id,
-            'recommendation_at' => date('Y-m-d H:i:s')
-        ];
     }
 
     public function cleansingData($request, $param)
