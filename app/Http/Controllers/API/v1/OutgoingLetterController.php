@@ -189,10 +189,7 @@ class OutgoingLetterController extends Controller
      */
     public function getAllMaterials($requestLetter)
     {
-        $requestLetterList = [];
-        foreach ($requestLetter as $key => $value) {
-            $requestLetterList[] = $value['applicant_id'];
-        }
+        $requestLetterList = $this->getApplicantId($requestLetter);
         $data = LogisticRealizationItems::select(
             'agency_name',
             'final_product_id',
@@ -215,5 +212,15 @@ class OutgoingLetterController extends Controller
             'soh_location_name'
         )->orderBy('agency_name', 'final_product_id', 'final_product_name')->get();
         return $data;
+    }
+
+    public function getApplicantId($requestLetter)
+    {
+        $requestLetterList = [];
+        foreach ($requestLetter as $key => $value) {
+            $requestLetterList[] = $value['applicant_id'];
+        }
+
+        return $requestLetterList;
     }
 }
