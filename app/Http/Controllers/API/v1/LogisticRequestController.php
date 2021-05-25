@@ -12,6 +12,8 @@ use App\LogisticRequest;
 use App\FileUpload;
 use App\Http\Requests\LogisticRequestStoreRequest;
 use App\Http\Requests\LogisticRequestUrgencyChangeRequest;
+use App\Http\Requests\UploadApplicantFileRequest;
+use App\Http\Requests\UploadLetterRequest;
 use App\Imports\LogisticImport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\MasterFaskes;
@@ -209,18 +211,11 @@ class LogisticRequestController extends Controller
         return $response;
     }
 
-    public function uploadLetter(Request $request, $id)
+    public function uploadLetter(UploadLetterRequest $request, $id)
     {
-        $param['letter_file'] = 'required|mimes:jpeg,jpg,png,pdf|max:10240';
-        $param['agency_id'] = 'required';
-        $param['applicant_id'] = 'required';
-        $param['update_type'] = 'required';
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
-            $applicant = Applicant::where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->firstOrFail();
-            $response = FileUpload::storeLetterFile($request);
-            Validation::setCompleteness($request);
-        }
+        $applicant = Applicant::where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->firstOrFail();
+        $response = FileUpload::storeLetterFile($request);
+        Validation::setCompleteness($request);
         Log::channel('dblogging')->debug('post:v1/logistic-request/letter/' . $id, $request->all());
         return $response;
     }
