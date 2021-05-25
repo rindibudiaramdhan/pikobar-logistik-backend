@@ -173,24 +173,39 @@ class LogisticRequestImport implements ToCollection, WithStartRow
 
     public function validatingDataImport($dataSet, $dataImport)
     {
-        $dataImport['status'] = 'invalid';
+        $isValid = true;
+        $dataImport['notes'] = '';
         if (!$dataSet['masterFaskesTypeId']) {
-            $dataImport['notes'] = 'Jenis instansi tidak terdaftar di data master';
-        } else if (!$dataSet['masterFaskesId']) {
-            $dataImport['notes'] = 'Nama instansi tidak terdaftar di data master';
-        } else if (count($this->invalidFormatLogistic) > 0) {
-            $dataImport['notes'] = implode(",", $this->invalidFormatLogistic);
+            $dataImport['notes'] = 'Jenis instansi tidak terdaftar di data master;';
+            $isValid = false;
+        }
+
+        if (!$dataSet['masterFaskesId']) {
+            $dataImport['notes'] .= 'Nama instansi tidak terdaftar di data master;';
+            $isValid = false;
+        }
+
+        if (count($this->invalidFormatLogistic) > 0) {
+            $dataImport['notes'] .= implode(',', $this->invalidFormatLogistic) . ';';
             $this->result[] = $dataImport;
-        } else if (count($this->invalidItemLogistic) > 0) {
-            $dataImport['notes'] = implode(",", $this->invalidItemLogistic);
-        } else {
+            $isValid = false;
+        }
+
+        if (count($this->invalidItemLogistic) > 0) {
+            $dataImport['notes'] .= implode(',', $this->invalidItemLogistic) . ';';
+            $isValid = false;
+        }
+
+        if ($isValid) {
             $this->insertData($dataSet, $dataImport);
             $dataImport['status'] = 'valid';
             $dataImport['notes'] = '';
         }
+
         $this->result[] = $dataImport;
         $this->invalidItemLogistic = [];
         $this->invalidFormatLogistic = [];
+
     }
 
     public function insertData($dataSet, $dataImport)
