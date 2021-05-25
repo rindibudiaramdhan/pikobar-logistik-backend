@@ -10,6 +10,7 @@ use DB;
 use App\LogisticRealizationItems;
 use App\Applicant;
 use App\Http\Requests\RequestLetterListRequest;
+use App\Http\Requests\RequestLetterStoreRequest;
 
 class RequestLetterController extends Controller
 {
@@ -54,26 +55,17 @@ class RequestLetterController extends Controller
         return response()->format(200, 'success', $data);
     }
 
-    public function store(Request $request)
+    public function store(RequestLetterStoreRequest $request)
     {
-        $param = [
-            'outgoing_letter_id' => 'required|numeric',
-            'letter_request' => 'required',
-        ];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === 200) {
-            DB::beginTransaction();
-            try {
-                $request_letter = RequestLetter::requestLetterStore($request);
-                $response = array(
-                    'request_letter' => $request_letter,
-                );
-                DB::commit();
-                $response = response()->format(200, 'success', $response);
-            } catch (\Exception $exception) {
-                DB::rollBack();
-                $response = response()->format(400, $exception->getMessage());
-            }
+        DB::beginTransaction();
+        try {
+            $request_letter = RequestLetter::requestLetterStore($request);
+            $response = ['request_letter' => $request_letter];
+            DB::commit();
+            $response = response()->format(Response::HTTP_OK, 'success', $response);
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $response = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage());
         }
         return $response;
     }
