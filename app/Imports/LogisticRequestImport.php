@@ -66,15 +66,6 @@ class LogisticRequestImport implements ToCollection, WithStartRow
         ];
     }
 
-    public function getDistrictCity($data)
-    {
-        $city = City::where('kemendagri_kabupaten_nama', 'LIKE', "%{$data['kabupaten']}%")->first();
-        if ($city) {
-            return $city->kemendagri_kabupaten_kode;
-        }
-        return false;
-    }
-
     public function getSubDistrict($data)
     {
         $subDistrict = Subdistrict::where('kemendagri_kecamatan_nama', 'LIKE', "%{$data['kecamatan']}%")->first();
@@ -178,7 +169,7 @@ class LogisticRequestImport implements ToCollection, WithStartRow
         $ret['masterFaskesTypeId'] = MasterFaskesType::getType($dataImport);
         $dataImport['master_faskes_type_id'] = $ret['masterFaskesTypeId'];
         $ret['masterFaskesId'] = LogisticImport::getMasterFaskes($dataImport);
-        $ret['districtCityId'] = $this->getDistrictCity($dataImport);
+        $ret['districtCityId'] = City::getCityCodeByName($dataImport['kabupaten']);
         $ret['subDistrictId'] = $this->getSubDistrict($dataImport);
         $ret['villageId'] = $this->getVillage($dataImport);
         $ret['logisticList'] = $this->getLogisticList($dataImport);
