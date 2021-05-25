@@ -253,36 +253,48 @@ class LogisticRealizationItemController extends Controller
 
     public function setStoreType($request)
     {
-        $store_type['need_id'] = $request->input('need_id');
-        $store_type['agency_id'] = $request->input('agency_id');
-        $store_type['applicant_id'] = $request->input('applicant_id');
-        $store_type['created_by'] = JWTAuth::user()->id;
-        $store_type['final_product_id'] = $request->input('product_id');
-        $store_type['final_product_name'] = $request->input('product_name');
-        $store_type['final_quantity'] = $request->input('realization_quantity');
-        $store_type['final_unit'] = $request['realization_unit'];
-        $store_type['final_date'] = $request->input('realization_date');
-        $store_type['final_status'] = $request->input('status');
-        $store_type['final_by'] = JWTAuth::user()->id;
-        $store_type['final_at'] = date('Y-m-d H:i:s');
+        $store_type = $this->setStoreFinal($request);
         if ($request->input('store_type') === 'recommendation') {
-            $store_type = [
-                'need_id' => $request->input('need_id'),
-                'agency_id' => $request->input('agency_id'),
-                'applicant_id' => $request->input('applicant_id'),
-                'product_id' => $request->input('product_id'),
-                'product_name' => $request->input('product_name'),
-                'realization_unit' => $request->input('recommendation_unit'),
-                'material_group' => $request->input('material_group'),
-                'realization_quantity' => $request->input('recommendation_quantity'),
-                'realization_date' => $request->input('recommendation_date'),
-                'status' => $request->input('status'),
-                'created_by' => JWTAuth::user()->id,
-                'recommendation_by' => JWTAuth::user()->id,
-                'recommendation_at' => date('Y-m-d H:i:s')
-            ];
+            $store_type = $this->setStoreRecommendation($request);
         }
         return $store_type;
+    }
+
+    public function setStoreFinal(Request $request)
+    {
+        return [
+            'need_id' => $request->input('need_id'),
+            'agency_id' => $request->input('agency_id'),
+            'applicant_id' => $request->input('applicant_id'),
+            'created_by' => JWTAuth::user()->id,
+            'final_product_id' => $request->input('product_id'),
+            'final_product_name' => $request->input('product_name'),
+            'final_quantity' => $request->input('realization_quantity'),
+            'final_unit' => $request['realization_unit'],
+            'final_date' => $request->input('realization_date'),
+            'final_status' => $request->input('status'),
+            'final_by' => JWTAuth::user()->id,
+            'final_at' => date('Y-m-d H:i:s')
+        ];
+    }
+
+    public function setStoreRecommendation(Request $request)
+    {
+        return [
+            'need_id' => $request->input('need_id'),
+            'agency_id' => $request->input('agency_id'),
+            'applicant_id' => $request->input('applicant_id'),
+            'product_id' => $request->input('product_id'),
+            'product_name' => $request->input('product_name'),
+            'realization_unit' => $request->input('recommendation_unit'),
+            'material_group' => $request->input('material_group'),
+            'realization_quantity' => $request->input('recommendation_quantity'),
+            'realization_date' => $request->input('recommendation_date'),
+            'status' => $request->input('status'),
+            'created_by' => JWTAuth::user()->id,
+            'recommendation_by' => JWTAuth::user()->id,
+            'recommendation_at' => date('Y-m-d H:i:s')
+        ];
     }
 
     public function cleansingData($request, $param)
