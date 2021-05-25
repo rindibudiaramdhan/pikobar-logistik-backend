@@ -117,15 +117,7 @@ class LogisticRealizationItems extends Model
 
     static function storeData($store_type)
     {
-        DB::beginTransaction();
-        try {
-            $realization = self::create($store_type);
-            DB::commit();
-        } catch (\Exception $exception) {
-            DB::rollBack();
-            $realization = $exception->getMessage();
-        }
-        return $realization;
+        return self::create($store_type);
     }
 
     static function withPICData($data)
