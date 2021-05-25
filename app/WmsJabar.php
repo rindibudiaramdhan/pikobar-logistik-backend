@@ -2,7 +2,7 @@
 
 /**
  * Class for storing all method & data regarding item usage information, which
- * are retrieved from Pelaporan API
+ * are retrieved from API
  */
 
 namespace App;
