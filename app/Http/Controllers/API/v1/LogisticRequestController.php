@@ -225,18 +225,14 @@ class LogisticRequestController extends Controller
         return $response;
     }
 
-    public function uploadApplicantFile(Request $request, $id)
+    public function uploadApplicantFile(UploadApplicantFileRequest $request, $id)
     {
-        $param = [
-            'applicant_file' => 'required|mimes:jpeg,jpg,png,pdf|max:10240'
-        ];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
-            $request->request->add(['applicant_id' => $id]);
-            $response = FileUpload::storeApplicantFile($request);
-            $applicant = Applicant::where('id', '=', $request->applicant_id)->update(['file' => $response->id]);
-            Validation::setCompleteness($request);
-        }
+
+        $request->request->add(['applicant_id' => $id]);
+        $response = FileUpload::storeApplicantFile($request);
+        $applicant = Applicant::where('id', '=', $request->applicant_id)->update(['file' => $response->id]);
+        Validation::setCompleteness($request);
+
         Log::channel('dblogging')->debug('post:v1/logistic-request/identity/' . $id, $request->all());
         return $response;
     }
