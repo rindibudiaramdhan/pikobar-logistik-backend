@@ -291,29 +291,40 @@ class LogisticRealizationItemController extends Controller
             ];
         }
         $param = array_merge($extra, $param);
-        if ($this->isStatusNoNeedItem($request->status)) {
-            unset($param['recommendation_date']);
-            unset($param['recommendation_quantity']);
-            unset($param['recommendation_unit']);
-            unset($param['realization_date']);
-            unset($param['realization_quantity']);
-
-            unset($request['product_id']);
-            unset($request['product_name']);
-            unset($request['realization_unit']);
-            unset($request['material_group']);
-            unset($request['recommendation_date']);
-            unset($request['recommendation_quantity']);
-            unset($request['recommendation_unit']);
-            unset($request['realization_date']);
-            unset($request['realization_quantity']);
-        }
 
         $result = [
             'request' => $request,
             'param' => $param
         ];
+
+        if ($this->isStatusNoNeedItem($request->status)) {
+            $result = $this->unsetParamAndRequest();
+        }
         return $result;
+    }
+
+    public function unsetParamAndRequest($param, $request)
+    {
+        unset($param['recommendation_date']);
+        unset($param['recommendation_quantity']);
+        unset($param['recommendation_unit']);
+        unset($param['realization_date']);
+        unset($param['realization_quantity']);
+
+        unset($request['product_id']);
+        unset($request['product_name']);
+        unset($request['realization_unit']);
+        unset($request['material_group']);
+        unset($request['recommendation_date']);
+        unset($request['recommendation_quantity']);
+        unset($request['recommendation_unit']);
+        unset($request['realization_date']);
+        unset($request['realization_quantity']);
+
+        return [
+            'request' => $request,
+            'param' => $param
+        ];
     }
 
     public function isStatusNoNeedItem($status)
