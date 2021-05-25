@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use App\Agency;
-use App\Applicant;
 use App\Enums\ApplicantStatusEnum;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
