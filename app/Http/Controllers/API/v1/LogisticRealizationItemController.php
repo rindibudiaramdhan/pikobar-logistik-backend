@@ -156,8 +156,7 @@ class LogisticRealizationItemController extends Controller
      */
     public function destroy($id)
     {
-        $result = LogisticRealizationItems::deleteData($id);
-        return response()->format($result['code'], $result['message'], $result['data']);
+        return LogisticRealizationItems::deleteData($id);
     }
 
     // Utilities Function Below Here

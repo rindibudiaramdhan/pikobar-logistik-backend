@@ -66,23 +66,15 @@ class LogisticRealizationItems extends Model
 
     static function deleteData($id)
     {
-        $result = [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-            'message' => 'Gagal Terhapus',
-            'data' => $id
-        ];
+        $result = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, 'Gagal Terhapus', $id);
         DB::beginTransaction();
         try {
             $deleteRealization = self::where('id', $id)->delete();
             DB::commit();
-            $result = [
-                'code' => Response::HTTP_OK,
-                'message' => 'success',
-                'data' => $id
-            ];
+            $result = response()->format(Response::HTTP_OK,'success', $id);
         } catch (\Exception $exception) {
             DB::rollBack();
-            $result['message'] = $exception->getMessage();
+            $result = response()->format(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage(), $id);
         }
         return $result;
     }
