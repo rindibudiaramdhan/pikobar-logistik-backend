@@ -24,7 +24,7 @@ class RequestLetterController extends Controller
         $data = $this->defaultJoinTable($data);
         $data = $data->where('request_letters.outgoing_letter_id', $request->outgoing_letter_id)
                       ->where(function ($query) use ($request) {
-                          if ($request->filled('application_letter_number')) {
+                          if ($request->has('application_letter_number')) {
                             $query->where('applicants.application_letter_number', 'LIKE', "%{$request->input('application_letter_number')}%");
                           }
                       })
@@ -112,7 +112,7 @@ class RequestLetterController extends Controller
         try {
             $list = Applicant::select('id', 'application_letter_number', 'verification_status', 'approval_status')
                 ->where(function ($query) use ($request) {
-                    if ($request->filled('application_letter_number')) {
+                    if ($request->has('application_letter_number')) {
                         $query->where('application_letter_number', 'LIKE', "%{$request->input('application_letter_number')}%");
                     }
                 })
