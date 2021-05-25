@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use DB;
 use App\LogisticRealizationItems;
 use App\Applicant;
+use App\Enums\ApplicantStatusEnum;
 use App\Http\Requests\RequestLetterListRequest;
 use App\Http\Requests\RequestLetterStoreRequest;
 use App\Http\Requests\RequestLetterUpdateRequest;
@@ -28,8 +29,8 @@ class RequestLetterController extends Controller
                             $query->where('applicants.application_letter_number', 'LIKE', "%{$request->input('application_letter_number')}%");
                           }
                       })
-                      ->where('verification_status', '=', Applicant::STATUS_VERIFIED)
-                      ->where('applicants.approval_status', '=', Applicant::STATUS_APPROVED)
+                      ->where('verification_status', '=', ApplicantStatusEnum::verified())
+                      ->where('applicants.approval_status', '=', ApplicantStatusEnum::approved())
                       ->whereNotNull('applicants.finalized_by');
 
         $data = $data->orderBy('request_letters.id')->paginate($limit);
@@ -117,8 +118,8 @@ class RequestLetterController extends Controller
                     }
                 })
                 ->where('is_deleted', '!=', 1)
-                ->where('verification_status', '=', Applicant::STATUS_VERIFIED)
-                ->where('approval_status', '=', Applicant::STATUS_APPROVED)
+                ->where('verification_status', '=', ApplicantStatusEnum::verified())
+                ->where('approval_status', '=', ApplicantStatusEnum::approved())
                 ->where('application_letter_number', '!=', '')
                 ->whereNotNull('finalized_by')
                 ->get();

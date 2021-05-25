@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Enums\ApplicantStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use DB;
@@ -73,7 +74,7 @@ class Needs extends Model
             'logistic_realization_items.realization_quantity as recommendation_quantity',
             'logistic_realization_items.realization_unit as recommendation_unit',
             'logistic_realization_items.realization_date as recommendation_date',
-            'logistic_realization_items.status as recommendation_status', 
+            'logistic_realization_items.status as recommendation_status',
             'logistic_realization_items.realization_unit as recommendation_unit_id',
             'logistic_realization_items.recommendation_by',
             'logistic_realization_items.recommendation_at'
@@ -164,12 +165,12 @@ class Needs extends Model
     }
 
     static function listNeed(Request $request)
-    {        
+    {
         $limit = $request->input('limit', 3);
         $data = Needs::getFields();
         $data = Needs::getListNeed($data, $request)->paginate($limit);
         $logisticItemSummary = Needs::where('needs.agency_id', $request->agency_id)->sum('quantity');
-        $data->getCollection()->transform(function ($item, $key) use ($logisticItemSummary) { 
+        $data->getCollection()->transform(function ($item, $key) use ($logisticItemSummary) {
             if (!$item->realization_product_name) {
                 $product = Product::where('id', $item->realization_product_id)->first();
                 $item->realization_product_name = $product ? $product->name : '';
@@ -187,7 +188,7 @@ class Needs extends Model
         return $query->whereHas('applicant', function($query) use ($request) {
             $query->active()
                 ->createdBetween($request)
-                ->where('verification_status', Applicant::STATUS_VERIFIED)
+                ->where('verification_status', ApplicantStatusEnum::verified())
                 ->filter($request);
         });
     }

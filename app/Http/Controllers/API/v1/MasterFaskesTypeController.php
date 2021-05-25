@@ -6,6 +6,7 @@ use App\MasterFaskesType;
 use App\Agency;
 use DB;
 use App\Applicant;
+use App\Enums\ApplicantStatusEnum;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
@@ -39,7 +40,7 @@ class MasterFaskesTypeController extends Controller
                             $query->active()
                             ->createdBetween($request)
                             ->filter($request)
-                            ->where('verification_status', Applicant::STATUS_VERIFIED);
+                            ->where('verification_status', ApplicantStatusEnum::verified());
                         });
                     }
                 ])
@@ -64,7 +65,7 @@ class MasterFaskesTypeController extends Controller
                             $query->whereHas('applicant', function($query) use ($request) {
                                 $query->active()
                                     ->createdBetween($request)
-                                    ->where('verification_status', Applicant::STATUS_VERIFIED)
+                                    ->where('verification_status', ApplicantStatusEnum::verified())
                                     ->filter($request);
                             });
                         }])
@@ -75,7 +76,7 @@ class MasterFaskesTypeController extends Controller
                             ->whereHas('applicant', function($query) use ($request) {
                                 $query->active()
                                     ->createdBetween($request)
-                                    ->where('verification_status', Applicant::STATUS_VERIFIED)
+                                    ->where('verification_status', ApplicantStatusEnum::verified())
                                     ->filter($request);
                             })
                             ->groupBy('agency_type')->get();

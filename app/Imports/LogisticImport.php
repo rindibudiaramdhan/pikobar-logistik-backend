@@ -21,6 +21,7 @@ use JWTAuth;
 use DB;
 use App\Validation;
 use App\Imports\MultipleSheetImport;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class LogisticImport extends Model

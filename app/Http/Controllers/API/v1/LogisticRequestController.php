@@ -8,8 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Needs;
 use App\Agency;
 use App\Applicant;
+use App\Enums\ApplicantStatusEnum;
 use App\LogisticRequest;
 use App\FileUpload;
+use App\Http\Requests\LogisticRequestChangeStatusRequest;
+use App\Http\Requests\LogisticRequestImportRequest;
 use App\Http\Requests\LogisticRequestStoreRequest;
 use App\Http\Requests\LogisticRequestUrgencyChangeRequest;
 use App\Http\Requests\MasterFaskesRequest;
@@ -35,9 +38,9 @@ class LogisticRequestController extends Controller
     public function finalList(Request $request)
     {
         $syncSohLocation = \App\PoslogProduct::syncSohLocation();
-        $request->request->add(['verification_status' => Applicant::STATUS_VERIFIED]);
-        $request->request->add(['approval_status' => Applicant::STATUS_APPROVED]);
-        $request->request->add(['finalized_by' => Applicant::STATUS_FINALIZED]);
+        $request->request->add(['verification_status' => ApplicantStatusEnum::verified()]);
+        $request->request->add(['approval_status' => ApplicantStatusEnum::approved()]);
+        $request->request->add(['finalized_by' => ApplicantStatusEnum::finalized()]);
         // Cut Off Logistic Data
         $cutOffDateTimeState = \Carbon\Carbon::createFromFormat(config('wmsjabar.cut_off_format'), config('wmsjabar.cut_off_datetime'))->toDateTimeString();
         $cutOffDateTime = $request->input('cut_off_datetime', $cutOffDateTimeState);
@@ -105,13 +108,9 @@ class LogisticRequestController extends Controller
         return $response;
     }
 
-    public function import(Request $request)
+    public function import(LogisticRequestImportRequest $request)
     {
-        $param = ['file' => 'required|mimes:xlsx'];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
-            $response = LogisticImport::importProcess($request);
-        }
+        $response = LogisticImport::importProcess($request);
         Log::channel('dblogging')->debug('post:v1/logistic-request/import', $request->all());
         return $response;
     }
@@ -132,10 +131,8 @@ class LogisticRequestController extends Controller
         return response()->format(Response::HTTP_OK, 'success', $data);
     }
 
-    public function changeStatus(Request $request)
+    public function changeStatus(LogisticRequestChangeStatusRequest $request)
     {
-        $param['agency_id'] = 'required|numeric';
-        $param['applicant_id'] = 'required|numeric';
         $processType = 'verification';
         $changeStatusParam = $this->setChangeStatusParam($request, $param, $processType);
         $param = $changeStatusParam['param'];
@@ -156,23 +153,23 @@ class LogisticRequestController extends Controller
         $changeStatusParam = [
             'param' => [
                 'approval_status' => 'required|string',
-                'approval_note' => $request->approval_status === Applicant::STATUS_REJECTED ? 'required' : ''
+                'approval_note' => $request->approval_status === ApplicantStatusEnum::rejected() ? 'required' : ''
             ],
             'processType' => $request->route()->getName(),
             'dataUpdate' => [
                 'approval_status' => $request->approval_status,
-                'approval_note' => $request->approval_status === Applicant::STATUS_REJECTED ? $request->approval_note : ''
+                'approval_note' => $request->approval_status === ApplicantStatusEnum::rejected() ? $request->approval_note : ''
             ],
         ];
 
         if ($request->route()->named('verification')) {
             $changeStatusParam['param'] = [
                 'verification_status' => 'required|string',
-                'note' => $request->verification_status === Applicant::STATUS_REJECTED ? 'required' : ''
+                'note' => $request->verification_status === ApplicantStatusEnum::rejected() ? 'required' : ''
             ];
             $changeStatusParam['dataUpdate'] = [
                 'verification_status' => $request->verification_status,
-                'note' => $request->verification_status === Applicant::STATUS_REJECTED ? $request->note : ''
+                'note' => $request->verification_status === ApplicantStatusEnum::rejected() ? $request->note : ''
             ];
         }
 
