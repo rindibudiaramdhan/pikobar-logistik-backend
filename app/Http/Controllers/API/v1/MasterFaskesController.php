@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMasterFaskesRequest;
+use App\Http\Requests\VerifyMasterFaskesRequest;
 use App\Validation;
 use Illuminate\Support\Facades\Storage;
 
@@ -43,21 +44,13 @@ class MasterFaskesController extends Controller
         return $response;
     }
 
-    public function verify(Request $request, $id)
+    public function verify(VerifyMasterFaskesRequest $request, $id)
     {
-        $param = ['verification_status' => 'required'];
-        $response = Validation::validate($request, $param);
-        if ($response->getStatusCode() === Response::HTTP_OK) {
-            if ($request->verification_status == 'verified' || $request->verification_status == 'rejected') {
-                try {
-                    $model =  MasterFaskes::findOrFail($id);
-                    $model->verification_status = $request->verification_status;
-                    $model->save();
-                    $response = response()->format(Response::HTTP_OK, 'success', $model);
-                } catch (\Exception $e) {
-                    $response = response()->json(array('message' => 'could_not_verify_faskes'), 500);
-                }
-            }
+        if ($request->verification_status == 'verified' || $request->verification_status == 'rejected') {
+            $model =  MasterFaskes::findOrFail($id);
+            $model->verification_status = $request->verification_status;
+            $model->save();
+            $response = response()->format(Response::HTTP_OK, 'success', $model);
         }
         return $response;
     }
