@@ -18,9 +18,4 @@ class AcceptanceReportTest extends TestCase
         $response = $this->get('/api/v1/logistic-report/realization-item/' . $agencyId);
         $response->assertStatus(Response::HTTP_OK);
     }
-
-    public function test_post_acceptance_report()
-    {
-
-    }
 }
