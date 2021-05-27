@@ -38,16 +38,16 @@ class LogisticRequestController extends Controller
     public function finalList(Request $request)
     {
         $syncSohLocation = \App\PoslogProduct::syncSohLocation();
-        $request->request->add(['verification_status' => ApplicantStatusEnum::verified()]);
-        $request->request->add(['approval_status' => ApplicantStatusEnum::approved()]);
-        $request->request->add(['finalized_by' => ApplicantStatusEnum::finalized()]);
+        $request->merge(['verification_status' => ApplicantStatusEnum::verified()]);
+        $request->merge(['approval_status' => ApplicantStatusEnum::approved()]);
+        $request->merge(['finalized_by' => ApplicantStatusEnum::finalized()]);
         // Cut Off Logistic Data
         $cutOffDateTimeState = \Carbon\Carbon::createFromFormat(config('wmsjabar.cut_off_format'), config('wmsjabar.cut_off_datetime'))->toDateTimeString();
         $cutOffDateTime = $request->input('cut_off_datetime', $cutOffDateTimeState);
         $today = \Carbon\Carbon::now()->toDateTimeString();
 
-        $request->request->add(['start_date' => $cutOffDateTime]);
-        $request->request->add(['end_date' => $today]);
+        $request->merge(['start_date' => $cutOffDateTime]);
+        $request->merge(['end_date' => $today]);
         $logisticRequest = Agency::getList($request, false)->get();
 
         $data = [
@@ -210,7 +210,7 @@ class LogisticRequestController extends Controller
     public function uploadApplicantFile(UploadApplicantFileRequest $request, $id)
     {
 
-        $request->request->add(['applicant_id' => $id]);
+        $request->merge(['applicant_id' => $id]);
         $response = FileUpload::storeApplicantFile($request);
         $applicant = Applicant::where('id', '=', $request->applicant_id)->update(['file' => $response->id]);
         Validation::setCompleteness($request);
