@@ -63,7 +63,7 @@ class LogisticRealizationItemController extends Controller
 
     public function add(LogisticRealizationItemStoreRequest $request)
     {
-        $request->request->add(['by_admin' => true]);
+        $request->merge(['by_admin' => true]);
         $cleansingData = $this->cleansingData($request, []);
         $request = $cleansingData['request'];
         $applicant = Applicant::select('id')->where('id', $request->applicant_id)->where('agency_id', $request->agency_id)->first();
