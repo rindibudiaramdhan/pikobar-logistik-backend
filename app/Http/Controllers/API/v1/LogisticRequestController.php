@@ -86,7 +86,7 @@ class LogisticRequestController extends Controller
         $data = Agency::getList($request, false)
                         ->with('letter:id,agency_id,letter')
                         ->where('agency.id', $id)
-                        ->first();
+                        ->firstOrFail();
 
         $response = response()->format(Response::HTTP_OK, 'success', $data);
         $isNotAdmin = !in_array(JWTAuth::user()->roles, User::ADMIN_ROLE);
