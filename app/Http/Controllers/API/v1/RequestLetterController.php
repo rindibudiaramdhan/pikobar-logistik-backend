@@ -166,7 +166,7 @@ class RequestLetterController extends Controller
             if ($request_letter_ignore == $value['id']) {
                 $data[] = $value;
             } else {
-                $data[] = getRequestLetter($value)
+                $data[] = $this->getRequestLetter($value);
             }
         }
 
