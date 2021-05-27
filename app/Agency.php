@@ -288,11 +288,13 @@ class Agency extends Model
                     ->leftJoin('master_faskes', 'agency.master_faskes_id', '=', 'master_faskes.id');
 
         if (!$defaultOnly) {
-            $data->withLogisticRequestData()
+            $data
+                 ->withLogisticRequestData()
                  ->whereHasApplicant($request)
                  ->whereStatusCondition($request)
                  ->whereHasFaskes($request)
-                 ->whereHasAgency($request);
+                 ->whereHasAgency($request)
+            ;
         }
 
         return $data->setOrder($request);

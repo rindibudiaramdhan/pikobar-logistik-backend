@@ -16,7 +16,14 @@ use Faker\Generator as Faker;
 $factory->define(App\User::class, function (Faker $faker) {
     return [
         'name' => $faker->name,
+        'username' => $faker->userName,
+        'name_district_city' => $faker->state,
+        'code_district_city' => $faker->numerify('##.##'),
+        'roles' => 'dinkesprov',
+        'agency_name' => 'Dinas Kesehatan',
         'email' => $faker->email,
-        'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', // secret
+        'password' => bcrypt('secret'), // secret
+        'handphone' => $faker->phoneNumber,
+        'phase' => 'surat',
     ];
 });

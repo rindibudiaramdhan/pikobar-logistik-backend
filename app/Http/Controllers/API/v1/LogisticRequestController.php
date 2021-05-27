@@ -86,10 +86,9 @@ class LogisticRequestController extends Controller
         $data = Agency::getList($request, false)
                         ->with('letter:id,agency_id,letter')
                         ->where('agency.id', $id)
-                        ->firstOrFail();
+                        ->first();
 
         $response = response()->format(Response::HTTP_OK, 'success', $data);
-
         $isNotAdmin = !in_array(JWTAuth::user()->roles, User::ADMIN_ROLE);
         $isDifferentDistrict = $data->location_district_code != JWTAuth::user()->code_district_city;
         if ($isNotAdmin && $isDifferentDistrict) {
